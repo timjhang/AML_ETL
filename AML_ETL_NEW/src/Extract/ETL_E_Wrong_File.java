@@ -46,7 +46,7 @@ public class ETL_E_Wrong_File {
 			checkMaps = new ETL_Q_ColumnCheckCodes().getCheckMaps(exc_record_date, exc_central_no, checkMapArray);
 		} catch (Exception ex) {
 			checkMaps = null;
-			System.out.println("ETL_E_PARTY_PHONE 抓取checkMaps資料有誤!"); // TODO V6_2
+			System.out.println("ETL_E_Wrong_File 抓取checkMaps資料有誤!"); // TODO V6_2
 			ex.printStackTrace();
 		}
 		// TODO V6_2 end
@@ -180,13 +180,12 @@ public class ETL_E_Wrong_File {
 			// 檢查有無錯誤
 			String detail_exe_result = "";
 			String file_exe_result ="";
-			if (!"".equals(processErrMsg)) {
-				detail_exe_result = "y";
-				file_exe_result = "D";
+			if ("".equals(processErrMsg)) {
+				detail_exe_result = "Y";
+				file_exe_result = "Y";
 			} else {
 				detail_exe_result = "N";
-				file_exe_result = "Y";
-
+				file_exe_result = "D";
 			}
 
 			// 處理後更新ETL_Detail_Log
@@ -295,10 +294,10 @@ public class ETL_E_Wrong_File {
 	}
 
 	public static void main(String[] argv) throws Exception {
-		String filePath = "D:\\company\\pershing\\agribank\\test_data\\test";
+		String filePath = "C:\\Users\\tibyby\\Desktop\\20180416\\AML_018_20180331001";
 		ETL_E_Wrong_File checkFile = new ETL_E_Wrong_File();
 
-		checkFile.record_Error_File(filePath, "", "987", "600", new SimpleDateFormat("yyyyMMdd").parse("20180130"), "987",
+		checkFile.record_Error_File(filePath, "", "8175", "018", new SimpleDateFormat("yyyyMMdd").parse("20180331"), "001",
 				"");
 
 	}

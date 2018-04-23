@@ -49,8 +49,9 @@ public class Tfunction {
 			@QueryParam("batch_no") String batch_no,
 			@QueryParam("exc_central_no") String exc_central_no,
 			@QueryParam("exc_record_date") String exc_record_dateStr,
-			@QueryParam("upload_no") String upload_no/*,
-			@QueryParam("program_no") String program_no */) {
+			@QueryParam("upload_no") String upload_no,
+			/*@QueryParam("program_no") String program_no */
+			@QueryParam("before_record_date") String before_record_dateStr) {
 		
 		// Web Service回傳訊息
 		ETLresponse response = new ETLresponse();
@@ -69,6 +70,7 @@ public class Tfunction {
 			new CheckParameter().check(filePath, batch_no, exc_central_no, exc_record_dateStr, upload_no);
 			Date exc_record_date = new Date();
 			exc_record_date = ETL_Tool_StringX.toUtilDate(exc_record_dateStr);
+			Date before_record_date = ETL_Tool_StringX.toUtilDate(before_record_dateStr);
 			
 			ETL_Bean_LogData logData = new ETL_Bean_LogData();
 			logData.setBATCH_NO(batch_no);
@@ -76,7 +78,7 @@ public class Tfunction {
 			logData.setFILE_TYPE(null);
 			logData.setRECORD_DATE(exc_record_date);
 			logData.setUPLOAD_NO(upload_no);
-			
+			logData.setBEFORE_ETL_PROCESS_DATE(before_record_date);
 			
 			// 執行20支T系列程式
 			stepStr = "ETL_T_ACCOUNT_PROPERTY";
