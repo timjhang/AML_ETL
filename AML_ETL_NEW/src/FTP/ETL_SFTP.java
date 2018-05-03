@@ -62,7 +62,7 @@ public class ETL_SFTP {
 	}
 	
 
-	public static ChannelSftp connect(String host, int port, String username, String password) {
+	private static ChannelSftp connect(String host, int port, String username, String password) {
 		ChannelSftp sftp = null;
 		try {
 			JSch jsch = new JSch();
@@ -240,6 +240,45 @@ public class ETL_SFTP {
 			return remoteFile.exists();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
+		} finally {
+			manager.close();
+		}
+	}
+	
+	public static boolean moveTo(String hostName, String port, String username, String password, String fromFilePath, String toFilePath) {
+		StandardFileSystemManager manager = new StandardFileSystemManager();
+
+		try {
+			manager.init();
+
+			// Create from File object
+			FileObject fromFile = manager.resolveFile (
+					createConnectionString(hostName, port, username, password, fromFilePath), createDefaultOptions());
+			
+			// Create to File object
+			FileObject toFile = manager.resolveFile (
+					createConnectionString(hostName, port, username, password, toFilePath), createDefaultOptions());
+
+			if (fromFile.exists()) {
+				
+				toFile.createFile();
+				
+				fromFile.moveTo(toFile);
+				System.out.println("Move file from " + fromFilePath + " to " + toFilePath + " success.");
+				
+				// 成功回傳true
+				return true;
+			} else {
+				System.out.println("Move file " + fromFilePath + " not found. Move failure.");
+				
+				// 失敗回傳false
+				return false;
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			// 失敗回傳false
+			return false;
 		} finally {
 			manager.close();
 		}

@@ -232,7 +232,7 @@ public class ETL_E_Wrong_File {
 		} else {
 			fileNameParseBean.setFile_Type(null);
 			fileNameParseBean.setFile_Name(fileNameSplit[1]);
-			fileNameParseBean.setRecord_Date_String(fileNameSplit[2]);
+			fileNameParseBean.setRecord_Date_String(fileNameSplit[2].split("\\.")[0]);
 		}
 
 		return fileNameParseBean;
@@ -299,7 +299,6 @@ public class ETL_E_Wrong_File {
 
 		checkFile.record_Error_File(filePath, "", "8175", "018", new SimpleDateFormat("yyyyMMdd").parse("20180331"), "001",
 				"");
-
 	}
 
 }

@@ -549,7 +549,11 @@ public class ETL_E_LOAN {
 							String last_payment_value = strQueue.popBytesString(14);
 							data.setLast_payment_value(ETL_Tool_StringX.strToBigDecimal(last_payment_value, 2));
 
-							if (advancedCheck && !ETL_Tool_FormatCheck.checkNum(last_payment_value)) {
+							if (ETL_Tool_FormatCheck.isEmpty(last_payment_value)) {
+								data.setError_mark("Y");
+								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+										String.valueOf(rowCount), "到期一次還本金額", "空值"));
+							} else if (advancedCheck && !ETL_Tool_FormatCheck.checkNum(last_payment_value)) {
 								data.setError_mark("Y");
 								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 										String.valueOf(rowCount), "到期一次還本金額", "格式錯誤:" + last_payment_value));

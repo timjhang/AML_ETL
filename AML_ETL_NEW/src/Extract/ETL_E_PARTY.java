@@ -725,13 +725,33 @@ public class ETL_E_PARTY {
 								String total_asset = strQueue.popBytesString(14);
 								// System.out.println("顧客AUM餘額 c-37(14):" +
 								// total_asset.getBytes().length);
-								data.setTotal_asset(ETL_Tool_StringX.strToBigDecimal(total_asset, 2));
+								if (ETL_Tool_FormatCheck.isEmpty(total_asset)) { 
+									data.setError_mark("Y"); 
+									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", 
+									String.valueOf(rowCount), "顧客AUM餘額", "空值")); 
+								} else if (!ETL_Tool_FormatCheck.checkNum(total_asset)) { 
+									data.setError_mark("Y"); 
+									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", 
+									String.valueOf(rowCount), "顧客AUM餘額", "格式錯誤:" + total_asset)); 
+								} else {
+									data.setTotal_asset(ETL_Tool_StringX.strToBigDecimal(total_asset, 2));
+								}
 
 								// 信託客戶AUM餘額 c-38(14)
 								String trust_total_asset = strQueue.popBytesString(14);
 								// System.out.println("信託客戶AUM餘額 c-38(14):" +
 								// trust_total_asset.getBytes().length);
-								data.setTrust_total_asset(ETL_Tool_StringX.strToBigDecimal(trust_total_asset, 2));
+								if (ETL_Tool_FormatCheck.isEmpty(trust_total_asset)) { 
+									data.setError_mark("Y"); 
+									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", 
+									String.valueOf(rowCount), "信託客戶AUM餘額", "空值")); 
+								} else if (!ETL_Tool_FormatCheck.checkNum(trust_total_asset)) { 
+									data.setError_mark("Y"); 
+									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", 
+									String.valueOf(rowCount), "信託客戶AUM餘額", "格式錯誤:" + trust_total_asset)); 
+								} else {
+									data.setTrust_total_asset(ETL_Tool_StringX.strToBigDecimal(trust_total_asset, 2));
+								}
 
 							}
 
@@ -978,11 +998,31 @@ public class ETL_E_PARTY {
 
 								// 顧客AUM餘額 c-37(14)
 								String total_asset = strQueue.popBytesString(14);
-								data.setTotal_asset(ETL_Tool_StringX.strToBigDecimal(total_asset, 2));
+								if (ETL_Tool_FormatCheck.isEmpty(total_asset)) { 
+									data.setError_mark("Y"); 
+									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", 
+									String.valueOf(rowCount), "顧客AUM餘額", "空值")); 
+								} else if (!ETL_Tool_FormatCheck.checkNum(total_asset)) { 
+									data.setError_mark("Y"); 
+									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", 
+									String.valueOf(rowCount), "顧客AUM餘額", "格式錯誤:" + total_asset)); 
+								} else {
+									data.setTotal_asset(ETL_Tool_StringX.strToBigDecimal(total_asset, 2));
+								}
 
 								// 信託客戶AUM餘額 c-38(14)
 								String trust_total_asset = strQueue.popBytesString(14);
-								data.setTrust_total_asset(ETL_Tool_StringX.strToBigDecimal(trust_total_asset, 2));
+								if (ETL_Tool_FormatCheck.isEmpty(trust_total_asset)) { 
+									data.setError_mark("Y"); 
+									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", 
+									String.valueOf(rowCount), "信託客戶AUM餘額", "空值")); 
+								} else if (!ETL_Tool_FormatCheck.checkNum(trust_total_asset)) { 
+									data.setError_mark("Y"); 
+									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", 
+									String.valueOf(rowCount), "信託客戶AUM餘額", "格式錯誤:" + trust_total_asset)); 
+								} else {
+									data.setTrust_total_asset(ETL_Tool_StringX.strToBigDecimal(trust_total_asset, 2));
+								}
 
 							}
 

@@ -145,10 +145,6 @@ public class Tfunction {
 			logData.setPROGRAM_NO("ETL_T_PARTY_PHONE");
 			new ETL_T_PARTY_PHONE().trans_to_PARTY_PHONE_LOAD(logData);
 
-			stepStr = "ETL_T_PARTY";
-			logData.setPROGRAM_NO("ETL_T_PARTY");
-			new ETL_T_PARTY().trans_to_PARTY_LOAD(logData);
-
 			stepStr = "ETL_T_SERVICE_LOAD";
 			logData.setPROGRAM_NO("ETL_T_SERVICE_LOAD");
 			new ETL_T_SERVICE_LOAD().trans_to_SERVICE_LOAD(logData);
@@ -160,6 +156,11 @@ public class Tfunction {
 			stepStr = "ETL_T_TRANSFER_LOAD";
 			logData.setPROGRAM_NO("ETL_T_TRANSFER_LOAD");
 			new ETL_T_TRANSFER_LOAD().trans_to_TRANSFER_LOAD(logData);
+			
+			stepStr = "ETL_T_PARTY";
+			logData.setPROGRAM_NO("ETL_T_PARTY");
+			new ETL_T_PARTY().trans_to_PARTY_LOAD(logData);
+			
 			
 			// 執行成功
 			response.setMsg("SUCCESS");

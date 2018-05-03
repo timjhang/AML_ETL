@@ -567,11 +567,21 @@ public class ETL_E_TRANSACTION {
 							String repayment_principal = strQueue.popBytesString(14);
 							data.setRepayment_principal(ETL_Tool_StringX.strToBigDecimal(repayment_principal, 2));
 
-							if (!specialRequired(transaction_type, repayment_principal, "LNP")) {
+							if (ETL_Tool_FormatCheck.isEmpty(repayment_principal)) {
 								data.setError_mark("Y");
 								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "還款本金", "當交易類型為還款(LNP) 時需有值"));
+										String.valueOf(rowCount), "還款本金", "空值"));
+							} else if (!ETL_Tool_FormatCheck.checkNum(repayment_principal)) {
+								data.setError_mark("Y");
+								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+										String.valueOf(rowCount), "還款本金", "格式錯誤:" + amount));
 							}
+							
+//							if (!specialRequired(transaction_type, repayment_principal, "LNP")) {
+//								data.setError_mark("Y");
+//								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+//										String.valueOf(rowCount), "還款本金", "當交易類型為還款(LNP) 時需有值"));
+//							}
 
 							// 更正記號 O X(01)
 							String ec_flag = strQueue.popBytesString(1);
@@ -603,6 +613,16 @@ public class ETL_E_TRANSACTION {
 							//特金信託申購/贖回單位數 O 9(12)V99
 							String fund_number_unit = strQueue.popBytesString(14);
 							data.setFund_number_unit(ETL_Tool_StringX.strToBigDecimal(fund_number_unit, 2));
+							
+							if (ETL_Tool_FormatCheck.isEmpty(fund_number_unit)) {
+								data.setError_mark("Y");
+								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+										String.valueOf(rowCount), "特金信託申購/贖回單位數", "空值"));
+							} else if (!ETL_Tool_FormatCheck.checkNum(fund_number_unit)) {
+								data.setError_mark("Y");
+								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+										String.valueOf(rowCount), "特金信託申購/贖回單位數", "格式錯誤:" + amount));
+							}
 							// TODO Transaction新規格 END
 
 							// data list 加入一個檔案

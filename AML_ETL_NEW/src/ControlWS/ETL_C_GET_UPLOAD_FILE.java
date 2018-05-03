@@ -24,95 +24,88 @@ public class ETL_C_GET_UPLOAD_FILE {
 		
 			// 確認是否執行過  BATCH_MASTER_LOG ????
 			if (hasRun()) {
-				
 				System.out.println("#### ETL_C_GET_UPLOAD_FILE 下載排程已執行過!! 不再執行");
 				return false;
 			}
 			
-			// 取得需要下載的共用中心  ETL_CENTRAL_INFO
-//			List<String> download_Central_No = getUseCentralNo();
-			List<String> download_Central_No = new ArrayList<String>();
-			download_Central_No.add(central_no);
+			// 待處理共用中心代號
+			String central_No = central_no;
 			
-			// 共用中心逐一進行處理
-			for (int cen_index = 0; cen_index < download_Central_No.size(); cen_index++) {
-				// 待處理共用中心代號
-				String central_No = download_Central_No.get(cen_index);
-				
-				// 搜尋MASTER檔, 取得 List<資料日期|上傳批號 |zip檔名>
-//				String[] dataInfo = new String[2];
-				List<String> zipFiles = new ArrayList<String>();
-				try {
-					zipFiles = checkHasMaster(central_No);
-				} catch (Exception ex) {
-					System.out.println("解析" + central_No + "Master檔出現問題!");
-					ex.printStackTrace();
-				}
-				
-				// 若存在則進行開路徑 & 下載 & 解壓縮作業
-				if (zipFiles != null) {
-					for (int file_index = 0; file_index < zipFiles.size(); file_index++) {
-						String[] dataInfo = zipFiles.get(file_index).split("\\|");
-						
-						// 正常情況只會有一筆, 這邊只取第一筆
-						if (file_index == 0) {
-							downloadFileInfo[0] = zipFiles.get(file_index);
-						}
-						
-						// 檢核資料日期 + 上傳批號, 是否曾經有跑過  ????
-						
-						
-						File downloadDir = new File(ETL_C_Profile.ETL_Download_localPath + central_No + "/" + dataInfo[0] + "/" + dataInfo[1]);
-						
-						if (!downloadDir.exists()) {
-							downloadDir.mkdirs();
-						}
-						// for test
+			// 搜尋MASTER檔, 取得 List<資料日期|上傳批號 |zip檔名>
+//			String[] dataInfo = new String[2];
+			List<String> zipFiles = new ArrayList<String>();
+			try {
+				zipFiles = parseMasterTxt(central_No);
+			} catch (Exception ex) {
+				System.out.println("解析" + central_No + "Master檔出現問題!");
+				ex.printStackTrace();
+			}
+			
+			// 若存在則進行開路徑 & 下載 & 解壓縮作業
+			if (zipFiles != null) {
+				for (int file_index = 0; file_index < zipFiles.size(); file_index++) {
+					String[] dataInfo = zipFiles.get(file_index).split("\\|");
+					
+					// 正常情況只會有一筆, 這邊只取第一筆
+					if (file_index == 0) {
+						downloadFileInfo[0] = zipFiles.get(file_index);
+					}
+					
+					// 檢核資料日期 + 上傳批號, 是否曾經有跑過  ????
+					
+					
+					File downloadDir = new File(ETL_C_Profile.ETL_Download_localPath + central_No + "/" + dataInfo[0] + "/" + dataInfo[1]);
+					
+					if (!downloadDir.exists()) {
+						downloadDir.mkdirs();
+					}
+					// for test
 //						else {
 //							System.out.println(file.getAbsolutePath() + " 已經存在, 請確認是否重複執行。");
 //							continue;
 //						}
-						
-						// 下載ZIP檔
-						if (downloadZipFile(central_No, dataInfo[2])) {
-							System.out.println("下載檔案:" + dataInfo[2] + " 成功!");
-						} else {
-							System.out.println("下載檔案:" + dataInfo[2] + " 發生錯誤!");
-							break;
-						}
-						
-						// 解壓縮檔案到新批號目錄底下
-						String localDownloadFilePath = ETL_C_Profile.ETL_Download_localPath + central_No + "/DOWNLOAD/" + dataInfo[2];
-						String localExtractDir = ETL_C_Profile.ETL_Download_localPath + central_No + "/" + dataInfo[0] + "/" + dataInfo[1] + "/";
-						String password = ETL_Tool_FileName_Encrypt.encode(dataInfo[2]);
-						if (ETL_Tool_ZIP.extractZipFiles(localDownloadFilePath, localExtractDir, password)) {
-							System.out.println("解壓縮localDownloadFilePath:" + localDownloadFilePath );
-							System.out.println("解壓縮localExtractDir:" + localExtractDir );
-							System.out.println("解壓縮password:" + password );
-							
-							System.out.println("解壓縮檔案:" + dataInfo[2] + " 成功！");
-							
-							// 紀錄解壓縮成功
-							// ????
-						} else {
-							System.out.println("解壓縮localDownloadFilePath:" + localDownloadFilePath );
-							System.out.println("解壓縮localExtractDir:" + localExtractDir );
-							System.out.println("解壓縮password:" + password );
-							
-							System.out.println("解壓縮檔案:" + dataInfo[2] + " 失敗！");
-							// 紀錄解壓縮失敗
-							// ????
-						}
-						
+					
+					// 下載ZIP檔
+					if (downloadZipFile(central_No, dataInfo[2])) {
+						System.out.println("下載檔案:" + dataInfo[2] + " 成功!");
+					} else {
+						System.out.println("下載檔案:" + dataInfo[2] + " 發生錯誤!");
+						break;
 					}
 					
-				} else {
-					// 若無收到Master檔, 給出訊息
-					System.out.println(central_No + " 查無Master檔, 不進行下載。");
+					// 解壓縮檔案到新批號目錄底下
+					String localDownloadFilePath = ETL_C_Profile.ETL_Download_localPath + central_No + "/DOWNLOAD/" + dataInfo[2];
+					String localExtractDir = ETL_C_Profile.ETL_Download_localPath + central_No + "/" + dataInfo[0] + "/" + dataInfo[1] + "/";
+					String password = ETL_Tool_FileName_Encrypt.encode(dataInfo[2]);
+					if (ETL_Tool_ZIP.extractZipFiles(localDownloadFilePath, localExtractDir, password)) {
+						System.out.println("解壓縮localDownloadFilePath:" + localDownloadFilePath );
+						System.out.println("解壓縮localExtractDir:" + localExtractDir );
+						System.out.println("解壓縮password:" + password );
+						
+						System.out.println("解壓縮檔案:" + dataInfo[2] + " 成功！");
+						
+						// 紀錄解壓縮成功
+						// ????
+					} else {
+						System.out.println("解壓縮localDownloadFilePath:" + localDownloadFilePath );
+						System.out.println("解壓縮localExtractDir:" + localExtractDir );
+						System.out.println("解壓縮password:" + password );
+						
+						System.out.println("解壓縮檔案:" + dataInfo[2] + " 失敗！");
+						// 紀錄解壓縮失敗
+						// ????
+					}
+					
 				}
 				
+				// 下載檔案解壓縮成功後, 刪除目錄上Master檔
+				removeMasterTxt(central_No);
+				
+			} else {
+				// 若無收到Master檔, 給出訊息
+				System.out.println(central_No + " 查無Master檔, 不進行下載。");
 			}
-			
+				
 			System.out.println("#### ETL_C_GET_UPLOAD_FILE - download_SFTP_Files End " + new SimpleDateFormat("yyyyMMdd HH:mm:ss").format(new Date()));
 			
 			return true;
@@ -130,17 +123,8 @@ public class ETL_C_GET_UPLOAD_FILE {
 		return false;
 	}
 	
-	// 取得有效共用中心代號  ????
-	private static List<String> getUseCentralNo() {
-		List<String> resultList = new ArrayList<String>();
-		resultList.add("600");
-//		resultList.add("018");
-		
-		return resultList;
-	}
-	
 	// 確認是否有對應Master檔
-	private static List<String> checkHasMaster(String central_No) throws Exception {
+	private static List<String> parseMasterTxt(String central_No) throws Exception {
 		
 		// 結果字串
 		List<String> resultList = new ArrayList<String>();
@@ -162,7 +146,8 @@ public class ETL_C_GET_UPLOAD_FILE {
 			localDownloadFileDir.mkdir();
 		}
 		
-		String localMasterFile = localDownloadFilePath + "/" + masterFileName;
+		String localMasterFile = localDownloadFilePath 
+				+ "/" + central_No + "MASTER_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".txt";
 		
 //		System.out.println(localMasterFile); // for test
 //		System.out.println(remoteMasterFile); // for test
@@ -195,6 +180,9 @@ public class ETL_C_GET_UPLOAD_FILE {
 			
 			resultList.add(resultStr);
 		}
+		
+		br.close();
+		fis.close();
 		
 		return resultList;
 	}
@@ -262,6 +250,26 @@ public class ETL_C_GET_UPLOAD_FILE {
 				ETL_C_Profile.sftp_username, ETL_C_Profile.sftp_password, localDownloadFile, remoteFile);
 		
 		return downLoadOK;
+	}
+	
+	// 刪除SFTP上Master.txt檔
+	private static boolean removeMasterTxt(String central_no) {
+		
+		String masterFileName = central_no + "MASTER.txt";
+		String remoteFilePath = "/" + central_no + "/UPLOAD/";
+		String remoteMasterFile = remoteFilePath + masterFileName;
+		
+		if (ETL_SFTP.delete(ETL_C_Profile.sftp_hostName, ETL_C_Profile.sftp_port, 
+				ETL_C_Profile.sftp_username, ETL_C_Profile.sftp_password, remoteMasterFile)) {
+			
+			System.out.println("刪除 " + remoteMasterFile + " 成功！");
+			return true;
+		} else {
+			
+			System.out.println("刪除 " + remoteMasterFile + " 失敗！");
+			return false;
+		}
+		
 	}
 
 	public static void main(String[] args) {
