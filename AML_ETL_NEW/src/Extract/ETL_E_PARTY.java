@@ -40,7 +40,8 @@ public class ETL_E_PARTY {
 			{ "c-8", "PARTY_ENTITY_SUB_TYPE" }, // 客戶子類型
 			{ "c-13", "COMM_NATIONALITY_CODE" }, // 國籍
 			{ "c-18", "PARTY_GENDER" }, // 性別
-			{ "c-20", "COMM_OCCUPATION_CODE" }, // 職業/行業
+			{ "c-20-1", "COMM_OCCUPATION_CODE3" }, // 職業/行業
+			{ "c-20-2", "COMM_OCCUPATION_CODE6" }, // 職業/行業
 			{ "c-21", "PARTY_MARITAL_STATUS_CODE" }, // 婚姻狀況
 			{ "c-24", "PARTY_EMPLOYEE_FLAG" }, // 行內員工註記
 			{ "c-26", "PARTY_MULTIPLE_NATIONALITY_FLAG" }, // 是否具多重國籍(自然人)
@@ -547,10 +548,25 @@ public class ETL_E_PARTY {
 									data.setError_mark("Y");
 									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 											String.valueOf(rowCount), "職業/行業", "空值"));
-								} else if (!checkMaps.get("c-20").containsKey(occupation_code.trim())) {
-									data.setError_mark("Y");
-									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-											String.valueOf(rowCount), "職業/行業", "非預期:" + occupation_code));
+								} else {
+									// 若性別GENDER是F或是M, 視為個人判斷職業別(3碼),其他視為法人判斷行業別(6碼), 若OCCUPATION_CODE=N/A，不區分個人或法人。
+									if ("N/A".equals(occupation_code.trim())) {
+										// 不進行任何處理
+									} else {
+										if (isPersonal(entity_type, gender)) {
+											if (!checkMaps.get("c-20-1").containsKey(occupation_code.trim())) {
+												data.setError_mark("Y");
+												errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+														String.valueOf(rowCount), "職業", "非預期:" + occupation_code));
+											}
+										} else {
+											if (!checkMaps.get("c-20-2").containsKey(occupation_code.trim())) {
+												data.setError_mark("Y");
+												errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+														String.valueOf(rowCount), "行業", "非預期:" + occupation_code));
+											}
+										}
+									}
 								}
 
 								// 婚姻狀況 c-21(1)
@@ -856,11 +872,25 @@ public class ETL_E_PARTY {
 								// 職業/行業 c-20(6)
 								String occupation_code = strQueue.popBytesString(6);
 								data.setOccupation_code(occupation_code);
-								if (advancedCheck && !ETL_Tool_FormatCheck.isEmpty(occupation_code)
-										&& !checkMaps.get("c-20").containsKey(occupation_code.trim())) {
-									data.setError_mark("Y");
-									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-											String.valueOf(rowCount), "職業/行業", "非預期:" + occupation_code));
+								if (advancedCheck && !ETL_Tool_FormatCheck.isEmpty(occupation_code)) {
+									// 若性別GENDER是F或是M, 視為個人判斷職業別(3碼),其他視為法人判斷行業別(6碼), 若OCCUPATION_CODE=N/A，不區分個人或法人。
+									if ("N/A".equals(occupation_code.trim())) {
+										// 不進行任何處理
+									} else {
+										if (isPersonal(entity_type, gender)) {
+											if (!checkMaps.get("c-20-1").containsKey(occupation_code.trim())) {
+												data.setError_mark("Y");
+												errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+														String.valueOf(rowCount), "職業", "非預期:" + occupation_code));
+											}
+										} else {
+											if (!checkMaps.get("c-20-2").containsKey(occupation_code.trim())) {
+												data.setError_mark("Y");
+												errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+														String.valueOf(rowCount), "行業", "非預期:" + occupation_code));
+											}
+										}
+									}
 								}
 
 								// 婚姻狀況 c-21(1)
@@ -1416,6 +1446,17 @@ public class ETL_E_PARTY {
 		// 寫入後將計數與資料List清空
 		this.dataCount = 0;
 		this.dataList.clear();
+	}
+	
+	// 從客戶類型, 以及性別  判斷為自然人(true)/法人(false)
+	private static boolean isPersonal(String entity_type, String gender) {
+		if (("100".equals(entity_type))) {
+			return true;
+		} else if ("900".equals(entity_type) && ("F".equals(gender) || "M".equals(gender))) {
+			return true;
+		}
+
+		return false;
 	}
 
 	public static void main(String[] argv) throws Exception {

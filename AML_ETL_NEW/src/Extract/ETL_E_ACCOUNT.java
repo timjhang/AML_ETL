@@ -35,6 +35,7 @@ public class ETL_E_ACCOUNT {
 			{ "domain_id", "COMM_DOMAIN_ID" }, // 本會代號
 			{ "change_code", "ACCOUNT_CHANGE_CODE" }, // 異動代號
 			{ "account_type_code", "ACCOUNT_ACCOUNT_TYPE_CODE" }, // 帳戶類別
+			{ "account_type_code018", "ACCOUNT_ACCOUNT_TYPE_CODE018" }, // 帳戶類別
 			{ "property_code", "ACCOUNT_PROPERTY_CODE" }, // 連結服務
 			{ "currency_code", "COMM_CURRENCY_CODE" }, // 幣別
 			{ "status_code", "ACCOUNT_STATUS_CODE" }, // 帳戶狀態
@@ -416,7 +417,11 @@ public class ETL_E_ACCOUNT {
 								data.setError_mark("Y");
 								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 										String.valueOf(rowCount), "帳戶類別", "空值"));
-							} else if (!checkMaps.get("account_type_code").containsKey(account_type_code.trim())) {
+							}else if("018".equals(exc_central_no) && !checkMaps.get("account_type_code018").containsKey(account_type_code.trim())){
+								data.setError_mark("Y");
+								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+										String.valueOf(rowCount), "帳戶類別018", "非預期:" + account_type_code));
+							}else if (!"018".equals(exc_central_no) && !checkMaps.get("account_type_code").containsKey(account_type_code.trim())) {
 								data.setError_mark("Y");
 								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 										String.valueOf(rowCount), "帳戶類別", "非預期:" + account_type_code));
@@ -923,9 +928,10 @@ public class ETL_E_ACCOUNT {
 		// 讀取測試資料，並運行程式
 		 ETL_E_ACCOUNT one = new ETL_E_ACCOUNT();
 		 String filePath = "D:\\PSC\\Projects\\AgriBank\\UNIT_TEST";
+//		 String filePath = "D:\\PSC\\Projects\\AgriBank\\UNIT_TEST\\data\\五代查詢\\0409_600";
 		 String fileTypeName = "ACCOUNT";
-		 one.read_Account_File(filePath, fileTypeName, "ETL12146", "600",
-		 new SimpleDateFormat("yyyyMMdd").parse("20180227"), "001",
+		 one.read_Account_File(filePath, fileTypeName, "ETL99908", "018",
+		 new SimpleDateFormat("yyyyMMdd").parse("20180412"), "001",
 		 "ETL_E_ACCOUNT");
 	}
 
