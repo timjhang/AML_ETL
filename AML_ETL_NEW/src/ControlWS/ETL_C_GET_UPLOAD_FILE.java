@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import DB.ETL_P_Log;
 import FTP.ETL_SFTP;
 import Tool.ETL_Tool_FileName_Encrypt;
 import Tool.ETL_Tool_FormatCheck;
@@ -16,17 +17,13 @@ import Tool.ETL_Tool_ZIP;
 
 public class ETL_C_GET_UPLOAD_FILE {
 	
+	// 下載ETL 壓縮檔
 	public static boolean download_SFTP_Files(String central_no, String[] downloadFileInfo) {
 		
 		try {
 			
 			System.out.println("#### ETL_C_GET_UPLOAD_FILE - download_SFTP_Files Start " + new SimpleDateFormat("yyyyMMdd HH:mm:ss").format(new Date()));
-		
-			// 確認是否執行過  BATCH_MASTER_LOG ????
-			if (hasRun()) {
-				System.out.println("#### ETL_C_GET_UPLOAD_FILE 下載排程已執行過!! 不再執行");
-				return false;
-			}
+			
 			
 			// 待處理共用中心代號
 			String central_No = central_no;
@@ -117,10 +114,101 @@ public class ETL_C_GET_UPLOAD_FILE {
 		
 	}
 	
-	// 確認是否執行過BATCH_MASTER_LOG  ????
-	private static boolean hasRun() {
+	// 下載Rerun壓縮檔
+	public static boolean download_SFTP_RerunFiles(String central_no, String[] downloadFileInfo, String rerunRecordDateStr) {
 		
-		return false;
+		try {
+			
+			System.out.println("#### ETL_C_GET_UPLOAD_FILE - download_SFTP_RerunFiles Start " + new SimpleDateFormat("yyyyMMdd HH:mm:ss").format(new Date()));
+			
+			
+			// 待處理共用中心代號
+			String central_No = central_no;
+			
+			// 搜尋MASTER檔, 取得 List<資料日期|上傳批號 |zip檔名>
+//			String[] dataInfo = new String[2];
+			List<String> zipFiles = new ArrayList<String>();
+			try {
+				zipFiles = parseRerunTxt(central_No, rerunRecordDateStr);
+			} catch (Exception ex) {
+				System.out.println("解析" + central_No + "Rerun檔出現問題!");
+				ex.printStackTrace();
+			}
+			
+			// 若存在則進行開路徑 & 下載 & 解壓縮作業
+			if (zipFiles != null) {
+				for (int file_index = 0; file_index < zipFiles.size(); file_index++) {
+					String[] dataInfo = zipFiles.get(file_index).split("\\|");
+					
+					// 正常情況只會有一筆, 這邊只取第一筆
+					if (file_index == 0) {
+						downloadFileInfo[0] = zipFiles.get(file_index);
+					}
+					
+					// 檢核資料日期 + 上傳批號, 是否曾經有跑過  ????
+					
+					
+					File downloadDir = new File(ETL_C_Profile.ETL_Download_localPath + central_No + "/" + dataInfo[0] + "/" + dataInfo[1]);
+					
+					if (!downloadDir.exists()) {
+						downloadDir.mkdirs();
+					}
+					// for test
+//						else {
+//							System.out.println(file.getAbsolutePath() + " 已經存在, 請確認是否重複執行。");
+//							continue;
+//						}
+					
+					// 下載ZIP檔
+					if (downloadZipFile(central_No, dataInfo[2])) {
+						System.out.println("下載檔案:" + dataInfo[2] + " 成功!");
+					} else {
+						System.out.println("下載檔案:" + dataInfo[2] + " 發生錯誤!");
+						break;
+					}
+					
+					// 解壓縮檔案到新批號目錄底下
+					String localDownloadFilePath = ETL_C_Profile.ETL_Download_localPath + central_No + "/DOWNLOAD/" + dataInfo[2];
+					String localExtractDir = ETL_C_Profile.ETL_Download_localPath + central_No + "/" + dataInfo[0] + "/" + dataInfo[1] + "/";
+					String password = ETL_Tool_FileName_Encrypt.encode(dataInfo[2]);
+					if (ETL_Tool_ZIP.extractZipFiles(localDownloadFilePath, localExtractDir, password)) {
+						System.out.println("解壓縮localDownloadFilePath:" + localDownloadFilePath );
+						System.out.println("解壓縮localExtractDir:" + localExtractDir );
+						System.out.println("解壓縮password:" + password );
+						
+						System.out.println("解壓縮檔案:" + dataInfo[2] + " 成功！");
+						
+						// 紀錄解壓縮成功
+						// ????
+					} else {
+						System.out.println("解壓縮localDownloadFilePath:" + localDownloadFilePath );
+						System.out.println("解壓縮localExtractDir:" + localExtractDir );
+						System.out.println("解壓縮password:" + password );
+						
+						System.out.println("解壓縮檔案:" + dataInfo[2] + " 失敗！");
+						// 紀錄解壓縮失敗
+						// ????
+					}
+					
+				}
+				
+				// 下載檔案解壓縮成功後, 刪除目錄上Rerun檔
+				removeRerunTxt(central_No, new SimpleDateFormat("yyyyMMdd").parse(rerunRecordDateStr));
+				
+			} else {
+				// 若無收到Master檔, 給出訊息
+				System.out.println(central_No + " 查無Rerun檔, 不進行下載。");
+			}
+				
+			System.out.println("#### ETL_C_GET_UPLOAD_FILE - download_SFTP_RerunFiles End " + new SimpleDateFormat("yyyyMMdd HH:mm:ss").format(new Date()));
+			
+			return true;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			System.out.println("#### ETL_C_GET_UPLOAD_FILE - download_SFTP_RerunFiles 發生錯誤!! " + new SimpleDateFormat("yyyyMMdd HH:mm:ss").format(new Date()));
+			return false;
+		}
+		
 	}
 	
 	// 確認是否有對應Master檔
@@ -174,6 +262,70 @@ public class ETL_C_GET_UPLOAD_FILE {
 			System.out.println(masterLineStr); // for test
 			
 			resultStr = checkMasterLineString(central_No, masterLineStr);
+			if (resultStr == null) {
+				throw new Exception("解析" + parseFile.getName() + "解析出現問題!");
+			}
+			
+			resultList.add(resultStr);
+		}
+		
+		br.close();
+		fis.close();
+		
+		return resultList;
+	}
+	
+	// 確認是否有對應Rerun檔
+	private static List<String> parseRerunTxt(String central_No, String rerunRecordDateStr) throws Exception {
+		
+		// 結果字串
+		List<String> resultList = new ArrayList<String>();
+		
+		String rerunFileName = central_No + "_RERUN_" + rerunRecordDateStr + ".txt";
+		String remoteFilePath = "/" + central_No + "/UPLOAD/";
+		String remoteRerunFile = remoteFilePath + rerunFileName;
+		boolean hasRerun = ETL_SFTP.exist(ETL_C_Profile.sftp_hostName, ETL_C_Profile.sftp_port, 
+				ETL_C_Profile.sftp_username, ETL_C_Profile.sftp_password, remoteRerunFile);
+		
+		if (!hasRerun) {
+			System.out.println("找不到" + remoteRerunFile + "檔案!");
+			return null;
+		}
+		
+		String localDownloadFilePath = ETL_C_Profile.ETL_Download_localPath + central_No + "/DOWNLOAD";
+		File localDownloadFileDir = new File(localDownloadFilePath);
+		if (!localDownloadFileDir.exists()) {
+			localDownloadFileDir.mkdir();
+		}
+		
+		String localRerunFile = localDownloadFilePath 
+				+ "/" + central_No +"_RERUN_" + rerunRecordDateStr + "_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".txt";
+		
+//			System.out.println(localMasterFile); // for test
+//			System.out.println(remoteMasterFile); // for test
+		
+		// download Rerun檔
+		if (ETL_SFTP.download(ETL_C_Profile.sftp_hostName, ETL_C_Profile.sftp_port, 
+				ETL_C_Profile.sftp_username, ETL_C_Profile.sftp_password, localRerunFile, remoteRerunFile)) {
+			System.out.println("Download: " + remoteRerunFile + " 成功!");
+		} else {
+			System.out.println("Download: " + remoteRerunFile + " 失敗!");
+			return null;
+			// throw exception
+		}
+			
+		// 讀取master檔內明細資料, 回傳zip檔list
+		File parseFile = new File(localRerunFile);
+		FileInputStream fis = new FileInputStream(parseFile);
+		BufferedReader br = new BufferedReader(new InputStreamReader(fis,"BIG5"));
+		
+		String rerunLineStr = "";
+		String resultStr = "";
+		while (br.ready()) {
+			rerunLineStr = br.readLine();
+			System.out.println(rerunLineStr); // for test
+			
+			resultStr = checkMasterLineString(central_No, rerunLineStr);
 			if (resultStr == null) {
 				throw new Exception("解析" + parseFile.getName() + "解析出現問題!");
 			}
@@ -271,12 +423,34 @@ public class ETL_C_GET_UPLOAD_FILE {
 		}
 		
 	}
+	
+	// 刪除SFTP上XXX_RERUN_yyyyMMdd.txt檔
+	private static boolean removeRerunTxt(String central_no, Date record_date) {
+		
+		String rerunFileName = central_no + "_RERUN_" + new SimpleDateFormat("yyyyMMdd").format(record_date) + ".txt";
+		String remoteFilePath = "/" + central_no + "/UPLOAD/";
+		String remoteMasterFile = remoteFilePath + rerunFileName;
+		
+		if (ETL_SFTP.delete(ETL_C_Profile.sftp_hostName, ETL_C_Profile.sftp_port, 
+				ETL_C_Profile.sftp_username, ETL_C_Profile.sftp_password, remoteMasterFile)) {
+			
+			System.out.println("刪除 " + remoteMasterFile + " 成功！");
+			ETL_P_Log.write_Runtime_Log("removeMasterTxt", "刪除 " + remoteMasterFile + " 成功！");
+			return true;
+		} else {
+			
+			System.out.println("刪除 " + remoteMasterFile + " 失敗！");
+			ETL_P_Log.write_Runtime_Log("removeMasterTxt", "刪除 " + remoteMasterFile + " 失敗！");
+			return false;
+		}
+		
+	}
 
 	public static void main(String[] args) {
 		
-		String[] downloadFileInfo = new String[1];
-		download_SFTP_Files("600", downloadFileInfo);
-		System.out.println("downloadFileInfo = " + downloadFileInfo[0]);
+//		String[] downloadFileInfo = new String[1];
+//		download_SFTP_Files("600", downloadFileInfo);
+//		System.out.println("downloadFileInfo = " + downloadFileInfo[0]);
 	}
 
 }

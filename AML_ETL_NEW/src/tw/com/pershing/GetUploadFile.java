@@ -17,7 +17,9 @@ public class GetUploadFile {
 	@GET
 	@Path("/WS1")
 	@Produces (MediaType.APPLICATION_XML + ";charset=UTF-8")
-	public static ETLresponse getUploadFile(@QueryParam("centralNo") String centralNo) {
+	public static ETLresponse getUploadFile(@QueryParam("centralNo") String centralNo,
+											@QueryParam("runType") String runType,
+											@QueryParam("rerunRecordDate") String rerunRecordDateStr) {
 		
 		ETLresponse response = new ETLresponse();
 		
@@ -25,11 +27,20 @@ public class GetUploadFile {
 			
 			String[] downloadFileInfo = new String[1];
 			
-			if (ETL_C_GET_UPLOAD_FILE.download_SFTP_Files(centralNo, downloadFileInfo)) {
-				response.setFileInfo(downloadFileInfo[0]);
-				response.setMsg("SUCCESS");
+			if (!"RERUN".equals(runType)) {
+				if (ETL_C_GET_UPLOAD_FILE.download_SFTP_Files(centralNo, downloadFileInfo)) {
+					response.setFileInfo(downloadFileInfo[0]);
+					response.setMsg("SUCCESS");
+				} else {
+					response.setMsg("FAILURE");
+				}
 			} else {
-				response.setMsg("FAILURE");
+				if (ETL_C_GET_UPLOAD_FILE.download_SFTP_RerunFiles(centralNo, downloadFileInfo, rerunRecordDateStr)) {
+					response.setFileInfo(downloadFileInfo[0]);
+					response.setMsg("SUCCESS");
+				} else {
+					response.setMsg("FAILURE");
+				}
 			}
 			
 		} catch (Exception ex) {
