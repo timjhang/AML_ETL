@@ -23,8 +23,27 @@ import Tool.ETL_Tool_ParseFileName;
 import Tool.ETL_Tool_StringQueue;
 import Tool.ETL_Tool_StringX;
 
-public class ETL_E_TRANSACTION {
+public class ETL_E_TRANSACTION extends Extract {
 
+	public ETL_E_TRANSACTION() {
+		
+	}
+
+	public ETL_E_TRANSACTION(String filePath, String fileTypeName, String batch_no, String exc_central_no,
+			Date exc_record_date, String upload_no, String program_no) {
+		super(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
+	}
+
+	@Override
+	public void read_File() {
+		try {
+			read_Transaction_File(this.filePath, this.fileTypeName, this.batch_no, this.exc_central_no,
+					this.exc_record_date, this.upload_no, this.program_no);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
+	}
+	
 	// 進階檢核參數
 	private boolean advancedCheck = ETL_Profile.AdvancedCheck;
 
@@ -515,11 +534,12 @@ public class ETL_E_TRANSACTION {
 							String execution_branch_code = strQueue.popBytesString(7);
 							data.setExecution_branch_code(execution_branch_code);
 
-							if (!specialRequired(channel_type, execution_branch_code, "C02")) {
-								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "操作行", "當交易管道為C02才提供登入行"));
-							}
+							//2018-05-30 更動為不檢查
+//							if (!specialRequired(channel_type, execution_branch_code, "C02")) {
+//								data.setError_mark("Y");
+//								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+//										String.valueOf(rowCount), "操作行", "當交易管道為C02才提供登入行"));
+//							}
 
 							// 操作櫃員代號或姓名 O X(20)
 							String executer_id = strQueue.popBytesDiffString(20);
@@ -566,15 +586,17 @@ public class ETL_E_TRANSACTION {
 							// 還款本金 O 9(12)V99
 							String repayment_principal = strQueue.popBytesString(14);
 							data.setRepayment_principal(ETL_Tool_StringX.strToBigDecimal(repayment_principal, 2));
-
-							if (ETL_Tool_FormatCheck.isEmpty(repayment_principal)) {
-								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "還款本金", "空值"));
-							} else if (!ETL_Tool_FormatCheck.checkNum(repayment_principal)) {
-								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "還款本金", "格式錯誤:" + amount));
+							
+							if (transaction_type != null && "LNP".equals(transaction_type.toUpperCase().trim())) {
+								if (ETL_Tool_FormatCheck.isEmpty(repayment_principal)) {
+									data.setError_mark("Y");
+									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+											String.valueOf(rowCount), "還款本金", "空值"));
+								} else if (!ETL_Tool_FormatCheck.checkNum(repayment_principal)) {
+									data.setError_mark("Y");
+									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+											String.valueOf(rowCount), "還款本金", "格式錯誤:" + amount));
+								}
 							}
 							
 //							if (!specialRequired(transaction_type, repayment_principal, "LNP")) {
@@ -1053,8 +1075,8 @@ public class ETL_E_TRANSACTION {
 //		System.out.println("file_600: "+file_600.length);
 //		System.out.println("file_018: "+file_018.length);
 //		System.out.println("file_928_old: "+file_928_old.length);
-		one.read_Transaction_File(filePath, fileTypeName, "E9999999", "605",
-				new SimpleDateFormat("yyyyMMdd").parse("20180313"), "001", "ETL_E_TRANSACTION");
+		one.read_Transaction_File(filePath, fileTypeName, "E7777839", "951",
+				new SimpleDateFormat("yyyyMMdd").parse("20180424"), "001", "ETL_E_TRANSACTION");
 
 		time2 = System.currentTimeMillis();
 		System.out.println("花了：" + (time2 - time1) + "豪秒");

@@ -10,12 +10,29 @@ import DB.ConnectionHelper;
 import Profile.ETL_Profile;
 import Tool.ETL_Tool_CastObjUtil;
 
-public class ETL_T_PARTY_PHONE {
+public class ETL_T_PARTY_PHONE extends Transform {
+	
+	public ETL_T_PARTY_PHONE() {
+		
+	}
 
-	// 觸發DB2轉換Procedure, 轉換資料寫進PARTY_PHONE_LOAD  // TODO
+	public ETL_T_PARTY_PHONE(ETL_Bean_LogData logDat) {
+		super(logDat);
+	}
+
+	@Override
+	public void trans_File() {
+		try {
+			trans_to_PARTY_PHONE_LOAD(this.logData);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
+	}
+
+	// 觸發DB2轉換Procedure, 轉換資料寫進PARTY_PHONE_LOAD
 	public void trans_to_PARTY_PHONE_LOAD(ETL_Bean_LogData logData) {
 		
-		System.out.println("#######Transform - ETL_T_PARTY_PHONE - Start"); // TODO
+		System.out.println("#######Transform - ETL_T_PARTY_PHONE - Start");
 		
 		try {
 			
@@ -44,7 +61,7 @@ public class ETL_T_PARTY_PHONE {
 			ex.printStackTrace();
 		}
 		
-		System.out.println("#######Transform - ETL_T_PARTY_PHONE - End"); // TODO
+		System.out.println("#######Transform - ETL_T_PARTY_PHONE - End");
 		
 	}
 	

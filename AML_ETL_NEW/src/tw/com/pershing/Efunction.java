@@ -5,6 +5,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -28,6 +30,7 @@ import Extract.ETL_E_SERVICE;
 import Extract.ETL_E_TRANSACTION;
 import Extract.ETL_E_TRANSFER;
 import Extract.ETL_E_Wrong_File;
+import Extract.Extract;
 import Profile.ETL_Profile;
 import Tool.ETL_Tool_StringX;
 import tw.com.pershing.databean.ETLresponse;
@@ -83,71 +86,151 @@ public class Efunction {
 //			}
 			
 			
-			// 執行15支E系列程式
-			fileTypeName = "PARTY";
-			program_no = "ETL_E_" + fileTypeName;
-			new ETL_E_PARTY().read_Party_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
+//			// 執行15支E系列程式
+//			fileTypeName = "PARTY";
+//			program_no = "ETL_E_" + fileTypeName;
+//			new ETL_E_PARTY().read_Party_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
+//			
+//			fileTypeName = "ACCOUNT";
+//			program_no = "ETL_E_" + fileTypeName;
+//			new ETL_E_ACCOUNT().read_Account_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
+//			
+//			fileTypeName = "CALENDAR";
+//			program_no = "ETL_E_" + fileTypeName;
+//			new ETL_E_CALENDAR().read_CALENDAR_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
+//			
+//			fileTypeName = "COLLATERAL";
+//			program_no = "ETL_E_" + fileTypeName;
+//			new ETL_E_COLLATERAL().read_Collateral_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
+//			
+//			fileTypeName = "FCX";
+//			program_no = "ETL_E_" + fileTypeName;
+//			new ETL_E_FCX().read_FCX_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
+//			
+//			fileTypeName = "FX_RATE";
+//			program_no = "ETL_E_" + fileTypeName;
+//			new ETL_E_FX_RATE().read_Fx_Rate_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
+//			
+//			fileTypeName = "GUARANTOR";
+//			program_no = "ETL_E_" + fileTypeName;
+//			new ETL_E_GUARANTOR().read_Guarantor_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
+//			
+//			fileTypeName = "LOAN_DETAIL";
+//			program_no = "ETL_E_" + fileTypeName;
+//			new ETL_E_LOAN_DETAIL().read_Loan_Detail_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
+//			
+//			fileTypeName = "LOAN";
+//			program_no = "ETL_E_" + fileTypeName;
+//			new ETL_E_LOAN().read_Loan_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
+//			
+//			fileTypeName = "PARTY_ADDRESS";
+//			program_no = "ETL_E_" + fileTypeName;
+//			new ETL_E_PARTY_ADDRESS().read_Party_Address_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
+//			
+//			fileTypeName = "PARTY_PARTY_REL";
+//			program_no = "ETL_E_" + fileTypeName;
+//			new ETL_E_PARTY_PARTY_REL().read_Party_Party_Rel_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
+//			
+//			fileTypeName = "PARTY_PHONE";
+//			program_no = "ETL_E_" + fileTypeName;
+//			new ETL_E_PARTY_PHONE().read_Party_Phone_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
+//			
+//			fileTypeName = "SERVICE";
+//			program_no = "ETL_E_" + fileTypeName;
+//			new ETL_E_SERVICE().read_Service_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
+//			
+//			fileTypeName = "TRANSACTION";
+//			program_no = "ETL_E_" + fileTypeName;
+//			new ETL_E_TRANSACTION().read_Transaction_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
+//			
+//			fileTypeName = "TRANSFER";
+//			program_no = "ETL_E_" + fileTypeName;
+//			new ETL_E_TRANSFER().read_Transfer_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
+//			
+//			fileTypeName = "Wrong_File";
+//			program_no = "ETL_E_" + fileTypeName;
+//			new ETL_E_Wrong_File().read_Error_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
 			
-			fileTypeName = "ACCOUNT";
-			program_no = "ETL_E_" + fileTypeName;
-			new ETL_E_ACCOUNT().read_Account_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
-			
-			fileTypeName = "CALENDAR";
-			program_no = "ETL_E_" + fileTypeName;
-			new ETL_E_CALENDAR().read_CALENDAR_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
-			
-			fileTypeName = "COLLATERAL";
-			program_no = "ETL_E_" + fileTypeName;
-			new ETL_E_COLLATERAL().read_Collateral_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
-			
-			fileTypeName = "FCX";
-			program_no = "ETL_E_" + fileTypeName;
-			new ETL_E_FCX().read_FCX_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
-			
-			fileTypeName = "FX_RATE";
-			program_no = "ETL_E_" + fileTypeName;
-			new ETL_E_FX_RATE().read_Fx_Rate_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
-			
-			fileTypeName = "GUARANTOR";
-			program_no = "ETL_E_" + fileTypeName;
-			new ETL_E_GUARANTOR().read_Guarantor_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
-			
-			fileTypeName = "LOAN_DETAIL";
-			program_no = "ETL_E_" + fileTypeName;
-			new ETL_E_LOAN_DETAIL().read_Loan_Detail_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
-			
-			fileTypeName = "LOAN";
-			program_no = "ETL_E_" + fileTypeName;
-			new ETL_E_LOAN().read_Loan_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
-			
-			fileTypeName = "PARTY_ADDRESS";
-			program_no = "ETL_E_" + fileTypeName;
-			new ETL_E_PARTY_ADDRESS().read_Party_Address_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
-			
-			fileTypeName = "PARTY_PARTY_REL";
-			program_no = "ETL_E_" + fileTypeName;
-			new ETL_E_PARTY_PARTY_REL().read_Party_Party_Rel_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
-			
-			fileTypeName = "PARTY_PHONE";
-			program_no = "ETL_E_" + fileTypeName;
-			new ETL_E_PARTY_PHONE().read_Party_Phone_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
-			
-			fileTypeName = "SERVICE";
-			program_no = "ETL_E_" + fileTypeName;
-			new ETL_E_SERVICE().read_Service_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
+			List<Extract> extracts = new ArrayList<Extract>();
 			
 			fileTypeName = "TRANSACTION";
 			program_no = "ETL_E_" + fileTypeName;
-			new ETL_E_TRANSACTION().read_Transaction_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
+			extracts.add(new ETL_E_TRANSACTION(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no));
+			
+			fileTypeName = "PARTY";
+			program_no = "ETL_E_" + fileTypeName;
+			extracts.add(new ETL_E_PARTY(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no));
+			
+			fileTypeName = "ACCOUNT";
+			program_no = "ETL_E_" + fileTypeName;
+			extracts.add(new ETL_E_ACCOUNT(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no));
+			
+			fileTypeName = "CALENDAR";
+			program_no = "ETL_E_" + fileTypeName;
+			extracts.add(new ETL_E_CALENDAR(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no));
+			
+			fileTypeName = "COLLATERAL";
+			program_no = "ETL_E_" + fileTypeName;
+			extracts.add(new ETL_E_COLLATERAL(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no));
+			
+			fileTypeName = "FCX";
+			program_no = "ETL_E_" + fileTypeName;
+			extracts.add(new ETL_E_FCX(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no));
+			
+			fileTypeName = "FX_RATE";
+			program_no = "ETL_E_" + fileTypeName;
+			extracts.add(new ETL_E_FX_RATE(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no));
+			
+			fileTypeName = "GUARANTOR";
+			program_no = "ETL_E_" + fileTypeName;
+			extracts.add(new ETL_E_GUARANTOR(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no));
+			
+			fileTypeName = "LOAN_DETAIL";
+			program_no = "ETL_E_" + fileTypeName;
+			extracts.add(new ETL_E_LOAN_DETAIL(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no));
+			
+			fileTypeName = "LOAN";
+			program_no = "ETL_E_" + fileTypeName;
+			extracts.add(new ETL_E_LOAN(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no));
+			
+			fileTypeName = "PARTY_ADDRESS";
+			program_no = "ETL_E_" + fileTypeName;
+			extracts.add(new ETL_E_PARTY_ADDRESS(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no));
+			
+			fileTypeName = "PARTY_PARTY_REL";
+			program_no = "ETL_E_" + fileTypeName;
+			extracts.add(new ETL_E_PARTY_PARTY_REL(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no));
+			
+			fileTypeName = "PARTY_PHONE";
+			program_no = "ETL_E_" + fileTypeName;
+			extracts.add(new ETL_E_PARTY_PHONE(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no));
+			
+			fileTypeName = "SERVICE";
+			program_no = "ETL_E_" + fileTypeName;
+			extracts.add(new ETL_E_SERVICE(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no));
 			
 			fileTypeName = "TRANSFER";
 			program_no = "ETL_E_" + fileTypeName;
-			new ETL_E_TRANSFER().read_Transfer_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
+			extracts.add(new ETL_E_TRANSFER(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no));
 			
 			fileTypeName = "Wrong_File";
 			program_no = "ETL_E_" + fileTypeName;
-			new ETL_E_Wrong_File().record_Error_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
+			extracts.add(new ETL_E_Wrong_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no));
 			
+			fileTypeName = "E多線程";
+			ExecutorService executor = Executors.newFixedThreadPool(3);
+			
+			for (Extract extract : extracts) {
+				executor.execute(extract);
+			}
+			
+			executor.shutdown();
+
+			while (!executor.isTerminated()) {
+
+			}
+			
+			System.out.println("線程池已經關閉");
 			
 			// 執行成功
 			response.setMsg("SUCCESS");

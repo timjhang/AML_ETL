@@ -19,17 +19,17 @@ public class ETL_Profile {
 	private final static String db2SPSchema = ETL_Tool_DES.decrypt("f36ddb910a7dafa79b9ec0da15a003be");
 	public final static String db2TableSchema = ETL_Tool_DES.decrypt("f36ddb910a7dafa79b9ec0da15a003be");
 	
-//	// 151
-//	public final static String db2Url = 
-//			ETL_Tool_DES.decrypt("58fcd8a8d6fa0357b43596ad4e09a6c44ab4f8a6772d57e1925e"
-//					+ "5a9ab1fb66c8f838f6065c51203dfc32ca630f22f8fa13357e3eaf2e8d8fe2e1770317"
-//					+ "06369df75bae18dd9fb36d3b4f37cefd0fe16de0056e6b66c196185635c9acaa060aadceac2b82d800219b");
-			
-	// 152
+	// 151
 	public final static String db2Url = 
-			ETL_Tool_DES.decrypt("58fcd8a8d6fa0357b43596ad4e09a6c46d3311bad199a52e925e5a"
-					+ "9ab1fb66c83265187a99066055fc32ca630f22f8fa13357e3eaf2e8d8fe2e1770317063"
-					+ "69df75bae18dd9fb36d3b4f37cefd0fe16de0056e6b66c196185635c9acaa060aadceac2b82d800219b");
+			ETL_Tool_DES.decrypt("58fcd8a8d6fa0357b43596ad4e09a6c44ab4f8a6772d57e1925e"
+					+ "5a9ab1fb66c8f838f6065c51203dfc32ca630f22f8fa13357e3eaf2e8d8fe2e1770317"
+					+ "06369df75bae18dd9fb36d3b4f37cefd0fe16de0056e6b66c196185635c9acaa060aadceac2b82d800219b");
+			
+//	// 152
+//	public final static String db2Url = 
+//			ETL_Tool_DES.decrypt("58fcd8a8d6fa0357b43596ad4e09a6c46d3311bad199a52e925e5a"
+//					+ "9ab1fb66c83265187a99066055fc32ca630f22f8fa13357e3eaf2e8d8fe2e1770317063"
+//					+ "69df75bae18dd9fb36d3b4f37cefd0fe16de0056e6b66c196185635c9acaa060aadceac2b82d800219b");
 	
 	public final static String db2User = ETL_Tool_DES.decrypt("2772602b4cd74bec30a2869c8e5426a6");
 	public final static String db2Password = ETL_Tool_DES.decrypt("2d8f563ca3253c20c53af1a4a004b34f");

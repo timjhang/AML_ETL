@@ -1,6 +1,7 @@
 package Extract;
 
 import java.io.File;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
@@ -11,7 +12,26 @@ import DB.ETL_P_Log;
 import DB.ETL_Q_ColumnCheckCodes;
 import Tool.ETL_Tool_FormatCheck;
 
-public class ETL_E_Wrong_File {
+public class ETL_E_Wrong_File  extends Extract {
+	
+	public ETL_E_Wrong_File() {
+		
+	}
+
+	public ETL_E_Wrong_File(String filePath, String fileTypeName, String batch_no, String exc_central_no,
+			Date exc_record_date, String upload_no, String program_no) {
+		super(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
+	}
+	
+	@Override
+	public void read_File() {
+		try {
+			read_Error_File(this.filePath, this.fileTypeName, this.batch_no, this.exc_central_no,
+					this.exc_record_date, this.upload_no, this.program_no);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
+	}
 
 	// 欄位檢核用母Map
 	private static Map<String, Map<String, String>> checkMaps;
@@ -36,8 +56,8 @@ public class ETL_E_Wrong_File {
 //	};
 
 	// 取得錯誤檔名 並寫入到error Log
-	public void record_Error_File(String filePath, String fileTypeName, String batch_no, String exc_central_no,
-			Date exc_record_date, String upload_no, String program_no) throws Exception {
+	public void read_Error_File(String filePath, String fileTypeName, String batch_no, String exc_central_no,
+			Date exc_record_date, String upload_no, String program_no) {
 		
 		// TODO V6_2 start
 		// 取得所有檢核用子map, 置入母map內
@@ -78,11 +98,15 @@ public class ETL_E_Wrong_File {
 			// 取得檔名list
 			String[] fileNameArray = file.list();
 
+			String[] fileNameArraytemp = new String[fileNameArray.length];
 			System.out.println("ETL_Tool_FileReader 所有檔名");
 			for (int i = 0; i < fileNameArray.length; i++) {
 				System.out.println(fileNameArray[i]);
+				fileNameArraytemp[i] = fileNameArray[i].toUpperCase();
 			}
-
+			
+			fileNameArray = fileNameArraytemp;
+			
 			// 程式執行錯誤訊息 //
 			String processErrMsg = "";
 
@@ -99,7 +123,7 @@ public class ETL_E_Wrong_File {
 					//注意  row_count 為了不讓 pk 重複所以各項row_count用String.valueOf(i) 
 					errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(batch_no, exc_central_no, exc_record_date, "", "",
 							upload_no, "E", String.valueOf(i), "", "E001", fileNameArray[i]));
-					processErrMsg = "上傳檔名錯誤";
+					processErrMsg = fileNameArray[i] + "  副檔名錯誤";
 					continue;
 				}
 
@@ -108,7 +132,7 @@ public class ETL_E_Wrong_File {
 					System.out.println(fileNameArray[i] + " 檔名格式錯誤");
 					errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(batch_no, exc_central_no, exc_record_date, "", "",
 							upload_no, "E", String.valueOf(i), "", "E001", fileNameArray[i]));
-					processErrMsg = "上傳檔名錯誤";
+					processErrMsg = fileNameArray[i] + " 檔名格式錯誤";
 					continue;
 				}
 
@@ -128,7 +152,7 @@ public class ETL_E_Wrong_File {
 					System.out.println(fileNameArray[i] + " 報送單位錯誤");
 					errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(batch_no, exc_central_no, exc_record_date, "", "",
 							upload_no, "E", String.valueOf(i), "", "E002", fileNameArray[i]));
-					processErrMsg = "上傳檔名錯誤";
+					processErrMsg = " 報送單位錯誤";
 					continue;
 				}
 
@@ -144,7 +168,7 @@ public class ETL_E_Wrong_File {
 						System.out.println(fileNameArray[i] + " 業務別錯誤");
 						errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(batch_no, exc_central_no, exc_record_date, "",
 								"", upload_no, "E", String.valueOf(i), "", "E004", fileNameArray[i]));
-						processErrMsg = "上傳檔名錯誤";
+						processErrMsg = fileNameArray[i] + " 業務別錯誤";
 						continue;
 					}
 				}
@@ -154,7 +178,7 @@ public class ETL_E_Wrong_File {
 					System.out.println(fileNameArray[i] + " 檔案名稱錯誤");
 					errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(batch_no, exc_central_no, exc_record_date, "", "",
 							upload_no, "E", String.valueOf(i), "", "E001", fileNameArray[i]));
-					processErrMsg = "上傳檔名錯誤";
+					processErrMsg = fileNameArray[i] + " 檔案名稱錯誤";
 					continue;
 				}
 
@@ -163,13 +187,13 @@ public class ETL_E_Wrong_File {
 					System.out.println(fileNameArray[i] + " 日期格式錯誤");
 					errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(batch_no, exc_central_no, exc_record_date, "", "",
 							upload_no, "E", String.valueOf(i), "", "E003", fileNameArray[i]));
-					processErrMsg = "上傳檔名錯誤";
+					processErrMsg = fileNameArray[i] + " 日期格式錯誤";
 					continue;
 				} else if (!ETL_Tool_FormatCheck.checkDate(fileNameParseBean.getRecord_Date_String())) {
 					System.out.println(fileNameArray[i] + " 日期格式錯誤");
 					errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(batch_no, exc_central_no, exc_record_date, "", "",
 							upload_no, "E", String.valueOf(i), "", "E003", fileNameArray[i]));
-					processErrMsg = "上傳檔名錯誤";
+					processErrMsg = fileNameArray[i] + " 日期格式錯誤";
 					continue;
 				}
 
@@ -198,14 +222,18 @@ public class ETL_E_Wrong_File {
 					0, 0, file_exe_result, processErrMsg);
 
 		} catch (Exception ex) {
-			ETL_P_Log.update_End_ETL_Detail_Log(batch_no, exc_central_no, exc_record_date, upload_no, "E", program_no,
-					"E", "S", ex.getMessage(), new Date());
-			
-			// 處理後更新ETL_FILE_Log
-			ETL_P_Log.update_End_ETL_FILE_Log(batch_no, exc_central_no, exc_record_date,
-					"", "", upload_no, "E", new Date() , 0,
-					0, 0, "S",  ex.getMessage());
-			
+			try {
+				ETL_P_Log.update_End_ETL_Detail_Log(batch_no, exc_central_no, exc_record_date, upload_no, "E",
+						program_no, "E", "S", ex.getMessage(), new Date());
+
+				// 處理後更新ETL_FILE_Log
+				ETL_P_Log.update_End_ETL_FILE_Log(batch_no, exc_central_no, exc_record_date, "", "", upload_no, "E",
+						new Date(), 0, 0, 0, "S", ex.getMessage());
+			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
 			ex.printStackTrace();
 		}
 
@@ -294,11 +322,11 @@ public class ETL_E_Wrong_File {
 	}
 
 	public static void main(String[] argv) throws Exception {
-		String filePath = "C:\\Users\\tibyby\\Desktop\\20180416\\AML_018_20180331001";
-		ETL_E_Wrong_File checkFile = new ETL_E_Wrong_File();
-
-		checkFile.record_Error_File(filePath, "", "8175", "018", new SimpleDateFormat("yyyyMMdd").parse("20180331"), "001",
+		String filePath = "D:\\ETL\\DB952\\20180528\\001";
+		ETL_E_Wrong_File checkFile = new ETL_E_Wrong_File(filePath, "", "12346", "952", new SimpleDateFormat("yyyyMMdd").parse("20180528"), "001",
 				"");
+
+		checkFile.read_File();
 	}
 
 }

@@ -10,7 +10,24 @@ import DB.ConnectionHelper;
 import Profile.ETL_Profile;
 import Tool.ETL_Tool_CastObjUtil;
 
-public class ETL_T_PARTY_ADDRESS {
+public class ETL_T_PARTY_ADDRESS extends Transform {
+	
+	public ETL_T_PARTY_ADDRESS() {
+		
+	}
+
+	public ETL_T_PARTY_ADDRESS(ETL_Bean_LogData logDat) {
+		super(logDat);
+	}
+
+	@Override
+	public void trans_File() {
+		try {
+			trans_to_PARTY_ADDRESS_LOAD(this.logData);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
+	}
 
 	// 觸發DB2轉換function, 轉換資料寫進PARTY_ADDRESS_LOAD
 	public void trans_to_PARTY_ADDRESS_LOAD(ETL_Bean_LogData logData) {

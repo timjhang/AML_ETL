@@ -23,7 +23,26 @@ import Tool.ETL_Tool_ParseFileName;
 import Tool.ETL_Tool_StringQueue;
 import Tool.ETL_Tool_StringX;
 
-public class ETL_E_ACCOUNT {
+public class ETL_E_ACCOUNT extends Extract {
+	
+	public ETL_E_ACCOUNT() {
+		
+	}
+	
+	public ETL_E_ACCOUNT(String filePath, String fileTypeName, String batch_no, String exc_central_no,
+			Date exc_record_date, String upload_no, String program_no) {
+		super(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no);
+	}
+	
+	@Override
+	public void read_File() {
+		try {
+			read_Account_File(this.filePath, this.fileTypeName, this.batch_no, this.exc_central_no,
+					this.exc_record_date, this.upload_no, this.program_no);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
+	}
 
 	private static final String ETF_Tool_FileReader = null;
 

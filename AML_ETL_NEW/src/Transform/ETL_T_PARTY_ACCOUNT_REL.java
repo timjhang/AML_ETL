@@ -10,7 +10,24 @@ import DB.ConnectionHelper;
 import Profile.ETL_Profile;
 import Tool.ETL_Tool_CastObjUtil;
 
-public class ETL_T_PARTY_ACCOUNT_REL {
+public class ETL_T_PARTY_ACCOUNT_REL extends Transform {
+	
+	public ETL_T_PARTY_ACCOUNT_REL() {
+		
+	}
+
+	public ETL_T_PARTY_ACCOUNT_REL(ETL_Bean_LogData logDat) {
+		super(logDat);
+	}
+
+	@Override
+	public void trans_File() {
+		try {
+			trans_to_PARTY_ACCOUNT_REL_LOAD(this.logData);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
+	}
 
 	// 觸發DB2轉換function, 轉換資料寫進PARTY_ACCOUNT_REL_LOAD
 	public void trans_to_PARTY_ACCOUNT_REL_LOAD(ETL_Bean_LogData logData) {

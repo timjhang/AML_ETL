@@ -10,8 +10,25 @@ import DB.ConnectionHelper;
 import Profile.ETL_Profile;
 import Tool.ETL_Tool_CastObjUtil;
 
-public class ETL_T_ACCOUNT_PROPERTY {
+public class ETL_T_ACCOUNT_PROPERTY extends Transform {
 
+	public ETL_T_ACCOUNT_PROPERTY() {
+	
+	}
+	
+	public ETL_T_ACCOUNT_PROPERTY(ETL_Bean_LogData logDat) {
+		super(logDat);
+	}
+	
+	@Override
+	public void trans_File() {
+		try {
+			trans_to_ACCOUNT_PROPERTY_LOAD(this.logData);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
+	}
+	
 	// 觸發DB2轉換function, 轉換資料寫進ACCOUNT_PROPERTY_LOAD
 	public void trans_to_ACCOUNT_PROPERTY_LOAD(ETL_Bean_LogData logData) {
 

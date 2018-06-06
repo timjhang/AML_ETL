@@ -34,8 +34,8 @@ public class CheckETLstatus {
 		  		String ipAddr = addr.getHostAddress(); // Get IP Address
 
 		  		
-		  		System.out.println("Profile Url = " + ETL_Profile.db2Url);
-		  		System.out.println("ipAddr = " + ipAddr);
+//		  		System.out.println("Profile Url = " + ETL_Profile.db2Url);
+//		  		System.out.println("ipAddr = " + ipAddr);
 		  		
 		  		if (isLocalHostIpMatch(ETL_Profile.db2Url)) {
 		  			response.setMsg("SUCCESS");
@@ -65,7 +65,7 @@ public class CheckETLstatus {
 			while(addresses.hasMoreElements()){  
 				ip = (InetAddress) addresses.nextElement(); 
 				if (ip != null && ip instanceof Inet4Address) { 
-					System.out.println("本機的ip = " + ip.getHostAddress()); 
+//					System.out.println("本機的ip = " + ip.getHostAddress()); 
 					
 					if (etlServerUrl.contains(ip.getHostAddress())) {
 						return true;

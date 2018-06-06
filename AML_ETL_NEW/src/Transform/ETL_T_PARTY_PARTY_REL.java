@@ -10,12 +10,29 @@ import DB.ConnectionHelper;
 import Profile.ETL_Profile;
 import Tool.ETL_Tool_CastObjUtil;
 
-public class ETL_T_PARTY_PARTY_REL {
+public class ETL_T_PARTY_PARTY_REL extends Transform {
 
-	// 觸發DB2轉換Procedure, 轉換資料寫進PARTY_PARTY_REL_LOAD  // TODO
+	public ETL_T_PARTY_PARTY_REL() {
+		
+	}
+
+	public ETL_T_PARTY_PARTY_REL(ETL_Bean_LogData logDat) {
+		super(logDat);
+	}
+
+	@Override
+	public void trans_File() {
+		try {
+			trans_to_PARTY_PARTY_REL_LOAD(this.logData);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
+	}
+	
+	// 觸發DB2轉換Procedure, 轉換資料寫進PARTY_PARTY_REL_LOAD
 	public void trans_to_PARTY_PARTY_REL_LOAD(ETL_Bean_LogData logData) {
 		
-		System.out.println("#######Transform - ETL_T_PARTY_PARTY_REL - Start"); // TODO
+		System.out.println("#######Transform - ETL_T_PARTY_PARTY_REL - Start");
 		
 		try {
 			
@@ -44,7 +61,7 @@ public class ETL_T_PARTY_PARTY_REL {
 			ex.printStackTrace();
 		}
 		
-		System.out.println("#######Transform - ETL_T_PARTY_PARTY_REL - End"); // TODO
+		System.out.println("#######Transform - ETL_T_PARTY_PARTY_REL - End");
 		
 	}
 	
@@ -59,7 +76,7 @@ public class ETL_T_PARTY_PARTY_REL {
 		two.setUPLOAD_NO("5");
 		two.setRECORD_DATE(new java.util.Date());
 		
-		one.trans_to_PARTY_PARTY_REL_LOAD(two); // TODO
+		one.trans_to_PARTY_PARTY_REL_LOAD(two);
 		
 	}
 	
