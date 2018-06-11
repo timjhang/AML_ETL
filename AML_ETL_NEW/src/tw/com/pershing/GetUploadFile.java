@@ -51,6 +51,33 @@ public class GetUploadFile {
 		
 		return response;
 	}
+	
+	@GET
+	@Path("/WS2")
+	@Produces (MediaType.APPLICATION_XML + ";charset=UTF-8")
+	public static ETLresponse getMigrationUploadFile(@QueryParam("centralNo") String centralNo) {
+		
+		ETLresponse response = new ETLresponse();
+		
+		try {
+			
+			String[] downloadFileInfo = new String[1];
+			
+			if (ETL_C_GET_UPLOAD_FILE.download_SFTP_MigrationFiles(centralNo, downloadFileInfo)) {
+				response.setFileInfo(downloadFileInfo[0]);
+				response.setMsg("SUCCESS");
+			} else {
+				response.setMsg("FAILURE");
+			}
+			
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			response.setMsg("Exception");
+			response.setError(ex.getMessage());
+		}
+		
+		return response;
+	}
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub

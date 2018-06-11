@@ -166,66 +166,89 @@ public class Tfunction {
 			
 			List<Transform> transforms = new ArrayList<Transform>();
 			
+			// clone 新class指標用
+			ETL_Bean_LogData logData2 = new ETL_Bean_LogData();
+			
 			// 執行20支T系列程式
-			logData.setPROGRAM_NO("ETL_T_TRANSACTION_LOAD");
-			transforms.add(new ETL_T_TRANSACTION_LOAD(logData));
+			logData2 = logData.clone();
+			logData2.setPROGRAM_NO("ETL_T_TRANSACTION_LOAD");
+			transforms.add(new ETL_T_TRANSACTION_LOAD(logData2));
 			
-			logData.setPROGRAM_NO("ETL_T_PARTY");
-			transforms.add(new ETL_T_PARTY(logData));
+			logData2 = logData.clone();
+			logData2.setPROGRAM_NO("ETL_T_PARTY");
+			transforms.add(new ETL_T_PARTY(logData2));
 			
-			logData.setPROGRAM_NO("ETL_T_ACCOUNT_PROPERTY");
-			transforms.add(new ETL_T_ACCOUNT_PROPERTY(logData));
+			logData2 = logData.clone();
+			logData2.setPROGRAM_NO("ETL_T_ACCOUNT_PROPERTY");
+			transforms.add(new ETL_T_ACCOUNT_PROPERTY(logData2));
 
-			logData.setPROGRAM_NO("ETL_T_ACCOUNT");
-			transforms.add(new ETL_T_ACCOUNT(logData));
+			logData2 = logData.clone();
+			logData2.setPROGRAM_NO("ETL_T_ACCOUNT");
+			transforms.add(new ETL_T_ACCOUNT(logData2));
 
-			logData.setPROGRAM_NO("ETL_T_BALANCE");
-			transforms.add(new ETL_T_BALANCE(logData));
+			logData2 = logData.clone();
+			logData2.setPROGRAM_NO("ETL_T_BALANCE");
+			transforms.add(new ETL_T_BALANCE(logData2));
+			
+			logData2 = logData.clone();
+			logData2.setPROGRAM_NO("ETL_T_PARTY_ACCOUNT_REL");
+			transforms.add(new ETL_T_PARTY_ACCOUNT_REL(logData2));
 
-			logData.setPROGRAM_NO("ETL_T_CALENDAR_LOAD");
-			transforms.add(new ETL_T_CALENDAR_LOAD(logData));
+			logData2 = logData.clone();
+			logData2.setPROGRAM_NO("ETL_T_CALENDAR_LOAD");
+			transforms.add(new ETL_T_CALENDAR_LOAD(logData2));
 
-			logData.setPROGRAM_NO("ETL_T_FX_RATE_LOAD");
-			transforms.add(new ETL_T_FX_RATE_LOAD(logData));
+			logData2 = logData.clone();
+			logData2.setPROGRAM_NO("ETL_T_FX_RATE_LOAD");
+			transforms.add(new ETL_T_FX_RATE_LOAD(logData2));
 
-			logData.setPROGRAM_NO("ETL_T_LOAN_COLLATERAL_LOAD");
-			transforms.add(new ETL_T_LOAN_COLLATERAL_LOAD(logData));
+			logData2 = logData.clone();
+			logData2.setPROGRAM_NO("ETL_T_LOAN_COLLATERAL_LOAD");
+			transforms.add(new ETL_T_LOAN_COLLATERAL_LOAD(logData2));
 
-			logData.setPROGRAM_NO("ETL_T_LOAN_DETAIL_LOAD");
-			transforms.add(new ETL_T_LOAN_DETAIL_LOAD(logData));
+			logData2 = logData.clone();
+			logData2.setPROGRAM_NO("ETL_T_LOAN_DETAIL_LOAD");
+			transforms.add(new ETL_T_LOAN_DETAIL_LOAD(logData2));
 
-			logData.setPROGRAM_NO("ETL_T_LOAN_GUARANTOR_LOAD");
-			transforms.add(new ETL_T_LOAN_GUARANTOR_LOAD(logData));
+			logData2 = logData.clone();
+			logData2.setPROGRAM_NO("ETL_T_LOAN_GUARANTOR_LOAD");
+			transforms.add(new ETL_T_LOAN_GUARANTOR_LOAD(logData2));
 
-			logData.setPROGRAM_NO("ETL_T_LOAN_LOAD");
-			transforms.add(new ETL_T_LOAN_LOAD(logData));
+			logData2 = logData.clone();
+			logData2.setPROGRAM_NO("ETL_T_LOAN_LOAD");
+			transforms.add(new ETL_T_LOAN_LOAD(logData2));
 
-			logData.setPROGRAM_NO("ETL_T_LOAN_MASTER_LOAD");
-			transforms.add(new ETL_T_LOAN_MASTER_LOAD(logData));
+			logData2 = logData.clone();
+			logData2.setPROGRAM_NO("ETL_T_LOAN_MASTER_LOAD");
+			transforms.add(new ETL_T_LOAN_MASTER_LOAD(logData2));
 
-			logData.setPROGRAM_NO("ETL_T_PARTY_ACCOUNT_REL");
-			transforms.add(new ETL_T_PARTY_ACCOUNT_REL(logData));
+			logData2 = logData.clone();
+			logData2.setPROGRAM_NO("ETL_T_PARTY_ADDRESS");
+			transforms.add(new ETL_T_PARTY_ADDRESS(logData2));
 
-			logData.setPROGRAM_NO("ETL_T_PARTY_ADDRESS");
-			transforms.add(new ETL_T_PARTY_ADDRESS(logData));
+			logData2 = logData.clone();
+			logData2.setPROGRAM_NO("ETL_T_PARTY_EMAIL");
+			transforms.add(new ETL_T_PARTY_EMAIL(logData2));
 
-			logData.setPROGRAM_NO("ETL_T_PARTY_EMAIL");
-			transforms.add(new ETL_T_PARTY_EMAIL(logData));
+			logData2 = logData.clone();
+			logData2.setPROGRAM_NO("ETL_T_PARTY_NATIONALITY");
+			transforms.add(new ETL_T_PARTY_NATIONALITY(logData2));
 
-			logData.setPROGRAM_NO("ETL_T_PARTY_NATIONALITY");
-			transforms.add(new ETL_T_PARTY_NATIONALITY(logData));
+			logData2 = logData.clone();
+			logData2.setPROGRAM_NO("ETL_T_PARTY_PARTY_REL");
+			transforms.add(new ETL_T_PARTY_PARTY_REL(logData2));
 
-			logData.setPROGRAM_NO("ETL_T_PARTY_PARTY_REL");
-			transforms.add(new ETL_T_PARTY_PARTY_REL(logData));
+			logData2 = logData.clone();
+			logData2.setPROGRAM_NO("ETL_T_PARTY_PHONE");
+			transforms.add(new ETL_T_PARTY_PHONE(logData2));
 
-			logData.setPROGRAM_NO("ETL_T_PARTY_PHONE");
-			transforms.add(new ETL_T_PARTY_PHONE(logData));
+			logData2 = logData.clone();
+			logData2.setPROGRAM_NO("ETL_T_SERVICE_LOAD");
+			transforms.add(new ETL_T_SERVICE_LOAD(logData2));
 
-			logData.setPROGRAM_NO("ETL_T_SERVICE_LOAD");
-			transforms.add(new ETL_T_SERVICE_LOAD(logData));
-
-			logData.setPROGRAM_NO("ETL_T_TRANSFER_LOAD");
-			transforms.add(new ETL_T_TRANSFER_LOAD(logData));
+			logData2 = logData.clone();
+			logData2.setPROGRAM_NO("ETL_T_TRANSFER_LOAD");
+			transforms.add(new ETL_T_TRANSFER_LOAD(logData2));
 			
 			
 			stepStr = "T多線程";

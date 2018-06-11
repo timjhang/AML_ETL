@@ -16,8 +16,8 @@ public class ETL_T_BALANCE extends Transform {
 		
 	}
 	
-	public ETL_T_BALANCE(ETL_Bean_LogData logDat) {
-		super(logDat);
+	public ETL_T_BALANCE(ETL_Bean_LogData logData) {
+		super(logData);
 	}
 	
 	@Override
