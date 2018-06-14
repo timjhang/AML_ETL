@@ -378,11 +378,11 @@ public class ETL_E_SERVICE extends Extract {
 
 							} else if (ETL_Tool_FormatCheck.checkDate(service_date)) {
 								data.setService_date(ETL_Tool_StringX.toUtilDate(service_date));
-								if (!service_date.equals(pfn.getRecord_Date_String())) {
-									data.setError_mark("Y");
-									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-											String.valueOf(rowCount), "服務日期", "不等於首錄中檔案日期:" + service_date));
-								}
+//								if (!service_date.equals(pfn.getRecord_Date_String())) {
+//									data.setError_mark("Y");
+//									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+//											String.valueOf(rowCount), "服務日期", "不等於首錄中檔案日期:" + service_date));
+//								}
 							} else {
 								data.setError_mark("Y");
 								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
