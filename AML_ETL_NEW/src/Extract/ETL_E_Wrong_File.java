@@ -207,6 +207,7 @@ public class ETL_E_Wrong_File  extends Extract {
 			if ("".equals(processErrMsg)) {
 				detail_exe_result = "Y";
 				file_exe_result = "Y";
+				processErrMsg = "檢查上傳檔完整性: 正常";
 			} else {
 				detail_exe_result = "N";
 				file_exe_result = "D";

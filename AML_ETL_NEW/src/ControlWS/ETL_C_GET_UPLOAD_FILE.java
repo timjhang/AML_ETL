@@ -74,6 +74,8 @@ public class ETL_C_GET_UPLOAD_FILE {
 					String localDownloadFilePath = ETL_C_Profile.ETL_Download_localPath + central_No + "/DOWNLOAD/" + dataInfo[2];
 					String localExtractDir = ETL_C_Profile.ETL_Download_localPath + central_No + "/" + dataInfo[0] + "/" + dataInfo[1] + "/";
 					String password = ETL_Tool_FileName_Encrypt.encode(dataInfo[2]);
+					// 先清除資料底下舊有檔案
+					deleteDirFiles(localExtractDir);
 					if (ETL_Tool_ZIP.extractZipFiles(localDownloadFilePath, localExtractDir, password)) {
 						System.out.println("解壓縮localDownloadFilePath:" + localDownloadFilePath );
 						System.out.println("解壓縮localExtractDir:" + localExtractDir );
@@ -172,7 +174,7 @@ public class ETL_C_GET_UPLOAD_FILE {
 					String localExtractDir = ETL_C_Profile.ETL_Download_localPath + central_No + "/" + dataInfo[0] + "/" + dataInfo[1] + "/";
 					String password = ETL_Tool_FileName_Encrypt.encode(dataInfo[2]);
 					// 先清除資料底下舊有檔案
-					deleteDirFiles(ETL_C_Profile.ETL_Download_localPath + central_No + "/" + dataInfo[0] + "/" + dataInfo[1]);
+					deleteDirFiles(localExtractDir);
 					if (ETL_Tool_ZIP.extractZipFiles(localDownloadFilePath, localExtractDir, password)) {
 						System.out.println("解壓縮localDownloadFilePath:" + localDownloadFilePath );
 						System.out.println("解壓縮localExtractDir:" + localExtractDir );
@@ -268,7 +270,7 @@ public class ETL_C_GET_UPLOAD_FILE {
 					String localExtractDir = ETL_C_Profile.ETL_Download_localPath + central_No + "/Migration/" + dataInfo[0] + "/" + dataInfo[1] + "/";
 					String password = ETL_Tool_FileName_Encrypt.encode(dataInfo[2]);
 					// 先清除資料底下舊有檔案
-					deleteDirFiles(ETL_C_Profile.ETL_Download_localPath + central_No + "/Migration/" + dataInfo[0] + "/" + dataInfo[1]);
+					deleteDirFiles(localExtractDir);
 					if (ETL_Tool_ZIP.extractZipFiles(localDownloadFilePath, localExtractDir, password)) {
 						System.out.println("解壓縮localDownloadFilePath:" + localDownloadFilePath );
 						System.out.println("解壓縮localExtractDir:" + localExtractDir );
@@ -701,6 +703,54 @@ public class ETL_C_GET_UPLOAD_FILE {
 		
 	}
 	
+//	// Migration Files更新
+//	private static boolean renameMigrationFiles(String migrationFilesExtractDir) {
+//		
+//		File file = new File(migrationFilesExtractDir);
+//		
+//		if (file == null || !file.isDirectory()) {
+//			return false;
+//		}
+//		
+//		boolean isSuccess = true;
+//		
+//		try {
+//		
+//			File[] files = file.listFiles();
+//			for (int i = 0; i < files.length; i++) {
+//				System.out.println(files[i].getName());
+//				
+//				// 若檔名<=3個字, 則將檔案刪除
+//				if (files[i].getName().length() <= 3) {
+//					if (files[i].delete()) {
+//						System.out.println(files[i].getName() + " 檔名低於3個字，成功刪除！");
+//					} else {
+//						System.out.println(files[i].getName() + " 檔名低於3個字，刪除失敗！");
+//					}
+//					continue;
+//				}
+//				
+//				File newFile = new File(migrationFilesExtractDir + "/" + files[i].getName().substring(3));
+//				// 若檔案已經存在, 先行刪除, 後續檔案優先
+//				if (newFile.exists()) {
+//					newFile.delete();
+//				}
+//				if (files[i].renameTo(newFile)) {
+//					System.out.println("rename to : " + newFile.getName() + "  成功!!");
+//				} else {
+//					System.out.println("rename to : " + newFile.getName() + "  失敗!");
+//					isSuccess = false;
+//				}
+//			}
+//			
+//		} catch (Exception ex) {
+//			ex.printStackTrace();
+//			isSuccess = false;
+//		}
+//		
+//		return isSuccess;
+//	}
+	
 	// Migration Files更新
 	private static boolean renameMigrationFiles(String migrationFilesExtractDir) {
 		
@@ -716,14 +766,54 @@ public class ETL_C_GET_UPLOAD_FILE {
 		
 			File[] files = file.listFiles();
 			for (int i = 0; i < files.length; i++) {
-				System.out.println(files[i].getName());
-				File newFile = new File(migrationFilesExtractDir + "/" + files[i].getName().substring(3));
-				if (files[i].renameTo(newFile)) {
-					System.out.println("rename to : " + newFile.getName() + "  成功!!");
+				String fileName = files[i].getName();
+				
+				if (fileName.length() > 3 && fileName.startsWith("TR_") && !fileName.startsWith("TR_TR_")) {
+					System.out.println(fileName);
+					
+					File newFile = new File(migrationFilesExtractDir + "/" + files[i].getName().substring(3));
+					// 若檔案已經存在, 先行刪除, 後續檔案優先
+					if (newFile.exists()) {
+						newFile.delete();
+					}
+					if (files[i].renameTo(newFile)) {
+						System.out.println("rename to : " + newFile.getName() + "  成功!!");
+					} else {
+						System.out.println("rename to : " + newFile.getName() + "  失敗!");
+						isSuccess = false;
+					}
+					
 				} else {
-					System.out.println("rename to : " + newFile.getName() + "  失敗!");
-					isSuccess = false;
+					
+					if (files[i].delete()) {
+						System.out.println("檔案 " + fileName + " 不符合rename規則，成功刪除！");
+					} else {
+						System.out.println("檔案 " + fileName + " 不符合rename規則，刪除失敗！");
+						isSuccess = false;
+					}
 				}
+				
+//				// 若檔名<=3個字, 則將檔案刪除
+//				if (files[i].getName().length() <= 3) {
+//					if (files[i].delete()) {
+//						System.out.println(files[i].getName() + " 檔名低於3個字，成功刪除！");
+//					} else {
+//						System.out.println(files[i].getName() + " 檔名低於3個字，刪除失敗！");
+//					}
+//					continue;
+//				}
+//				
+//				File newFile = new File(migrationFilesExtractDir + "/" + files[i].getName().substring(3));
+//				// 若檔案已經存在, 先行刪除, 後續檔案優先
+//				if (newFile.exists()) {
+//					newFile.delete();
+//				}
+//				if (files[i].renameTo(newFile)) {
+//					System.out.println("rename to : " + newFile.getName() + "  成功!!");
+//				} else {
+//					System.out.println("rename to : " + newFile.getName() + "  失敗!");
+//					isSuccess = false;
+//				}
 			}
 			
 		} catch (Exception ex) {
@@ -756,11 +846,21 @@ public class ETL_C_GET_UPLOAD_FILE {
 //		download_SFTP_Files("600", downloadFileInfo);
 //		System.out.println("downloadFileInfo = " + downloadFileInfo[0]);
 		
-		if (renameMigrationFiles("C:/Users/10404003/Desktop/農金/2018/180609/test")) {
-			System.out.println("rename success!");
-		} else {
-			System.out.println("rename failure!");
-		}
+//		deleteDirFiles("C:/Users/10404003/Desktop/農金/2018/180615");
+		
+//		if (renameMigrationFiles("C:/Users/10404003/Desktop/農金/2018/180615/")) {
+//			System.out.println("rename success!");
+//		} else {
+//			System.out.println("rename failure!");
+//		}
+		
+//		File file2 = new File("C:/Users/10404003/Desktop/農金/2018/180615/複製.txt");
+//		File file1 = new File("C:/Users/10404003/Desktop/農金/2018/180615/456.txt");
+////		System.out.println(file1.renameTo(file2));
+//		if (file1.exists()) {
+//			file1.delete();
+//			file1.renameTo(file2);
+//		}
 	}
 
 }

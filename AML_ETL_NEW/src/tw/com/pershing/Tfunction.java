@@ -1,6 +1,7 @@
 package tw.com.pershing;
 
 import java.net.URLDecoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -55,6 +56,8 @@ public class Tfunction {
 			@QueryParam("upload_no") String upload_no,
 			/*@QueryParam("program_no") String program_no */
 			@QueryParam("before_record_date") String before_record_dateStr) {
+		
+		System.out.println("#### Tfunction Start " + new SimpleDateFormat("yyyyMMdd HH:mm:ss").format(new Date()));
 		
 		// Web Service回傳訊息
 		ETLresponse response = new ETLresponse();
@@ -230,9 +233,10 @@ public class Tfunction {
 			logData2.setPROGRAM_NO("ETL_T_PARTY_EMAIL");
 			transforms.add(new ETL_T_PARTY_EMAIL(logData2));
 
-			logData2 = logData.clone();
-			logData2.setPROGRAM_NO("ETL_T_PARTY_NATIONALITY");
-			transforms.add(new ETL_T_PARTY_NATIONALITY(logData2));
+			// 2018.06.27  國籍檔確認取消使用 James
+//			logData2 = logData.clone();
+//			logData2.setPROGRAM_NO("ETL_T_PARTY_NATIONALITY");
+//			transforms.add(new ETL_T_PARTY_NATIONALITY(logData2));
 
 			logData2 = logData.clone();
 			logData2.setPROGRAM_NO("ETL_T_PARTY_PARTY_REL");
@@ -281,6 +285,8 @@ public class Tfunction {
 			response.setMsg("Exception");
 			response.setError("執行" + stepStr + "發生錯誤:" + ex.getMessage());
 		}
+		
+		System.out.println("#### Tfunction End " + new SimpleDateFormat("yyyyMMdd HH:mm:ss").format(new Date()));
 		
 		return response;
 	}

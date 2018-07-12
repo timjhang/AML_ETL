@@ -360,7 +360,11 @@ public class ETL_E_PARTY extends Extract {
 							String my_customer_flag = strQueue.popBytesString(1);
 							data.setMy_customer_flag(my_customer_flag);
 							if (ETL_Tool_FormatCheck.isEmpty(my_customer_flag)) {
-								data.setError_mark("Y");
+//								data.setError_mark("Y");
+								// 預設值 - 非本行客戶
+								data.setMy_customer_flag("N");
+								my_customer_flag = "N";
+								
 								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 										String.valueOf(rowCount), "是否為本行客戶", "空值"));
 								// 無法區分是否為本行客戶, 則無法判定檢核方式, 跳過後續檢核不執行 // TODO
@@ -369,7 +373,11 @@ public class ETL_E_PARTY extends Extract {
 								// rowCount++;
 								// continue;
 							} else if (!checkMaps.get("c-5").containsKey(my_customer_flag)) {
-								data.setError_mark("Y");
+//								data.setError_mark("Y");
+								// 預設值 - 非本行客戶
+								data.setMy_customer_flag("N");
+								my_customer_flag = "N";
+								
 								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 										String.valueOf(rowCount), "是否為本行客戶", "非預期:" + my_customer_flag));
 								// 無法區分是否為本行客戶, 則無法判定檢核方式, 跳過後續檢核不執行 // TODO
@@ -386,11 +394,17 @@ public class ETL_E_PARTY extends Extract {
 
 								// 異動代號檢核*
 								if (ETL_Tool_FormatCheck.isEmpty(change_code)) {
-									data.setError_mark("Y");
+//									data.setError_mark("Y");
+									// 預設值 - 更新
+									data.setChange_code("U");
+									
 									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 											String.valueOf(rowCount), "異動代號", "空值"));
 								} else if (!checkMaps.get("c-4").containsKey(change_code)) {
-									data.setError_mark("Y");
+//									data.setError_mark("Y");
+									// 預設值 - 更新
+									data.setChange_code("U");
+									
 									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 											String.valueOf(rowCount), "異動代號", "非預期:" + change_code));
 								}
@@ -461,7 +475,10 @@ public class ETL_E_PARTY extends Extract {
 								data.setDate_of_birth(ETL_Tool_StringX.toUtilDate(date_of_birth));
 								if (advancedCheck && !ETL_Tool_FormatCheck.isEmpty(date_of_birth)
 										&& !ETL_Tool_FormatCheck.checkDate(date_of_birth)) {
-									data.setError_mark("Y");
+//									data.setError_mark("Y");
+									// 預設值 - 1900-01-01
+									data.setDate_of_birth(ETL_Tool_StringX.toUtilDate("19000101"));
+									
 									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 											String.valueOf(rowCount), "出生年月日/創立日期", "日期格式不正確:" + date_of_birth));
 								}
@@ -484,16 +501,25 @@ public class ETL_E_PARTY extends Extract {
 								// nationality_code.getBytes().length);
 								data.setNationality_code(nationality_code);
 								if (ETL_Tool_FormatCheck.isEmpty(nationality_code)) {
-									data.setError_mark("Y");
+//									data.setError_mark("Y");
+									// 預設值 - TW
+									data.setNationality_code("TW");
+									
 									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 											String.valueOf(rowCount), "國籍", "空值"));
 								} else if (!checkMaps.get("c-13").containsKey(nationality_code)) {
-									data.setError_mark("Y");
+//									data.setError_mark("Y");
+									// 預設值 - TW
+									data.setNationality_code("TW");
+									
 									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 											String.valueOf(rowCount), "國籍", "非預期:" + nationality_code));
 								} else if ("　".equals(nationality_code)) { // 國籍代碼防全形空白錯誤  2018.03.28
-									data.setNationality_code("  ");
-									data.setError_mark("Y");
+//									data.setNationality_code("  ");
+//									data.setError_mark("Y");
+									// 預設值 - TW
+									data.setNationality_code("TW");
+									
 									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 											String.valueOf(rowCount), "國籍", "全形空白錯誤"));
 								}
@@ -517,7 +543,10 @@ public class ETL_E_PARTY extends Extract {
 								data.setOpen_date(ETL_Tool_StringX.toUtilDate(open_date));
 								if (advancedCheck && !ETL_Tool_FormatCheck.isEmpty(open_date)
 										&& !ETL_Tool_FormatCheck.checkDate(open_date)) {
-									data.setError_mark("Y");
+//									data.setError_mark("Y");
+									// 預設值 - 1900-01-01
+									data.setOpen_date(ETL_Tool_StringX.toUtilDate("19000101"));
+									
 									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 											String.valueOf(rowCount), "顧客開戶日期", "日期格式不正確:" + open_date));
 								}
@@ -553,7 +582,10 @@ public class ETL_E_PARTY extends Extract {
 								data.setAnnual_income(ETL_Tool_StringX.toLong(annual_income));
 								if (advancedCheck && !ETL_Tool_FormatCheck.isEmpty(annual_income)
 										&& !ETL_Tool_FormatCheck.checkNum(annual_income)) {
-									data.setError_mark("Y");
+//									data.setError_mark("Y");
+									// 預設值 - 0
+									data.setAnnual_income(ETL_Tool_StringX.toLong("0"));
+									
 									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 											String.valueOf(rowCount), "年收入(法人)", "非數字:" + annual_income));
 								}
@@ -564,7 +596,14 @@ public class ETL_E_PARTY extends Extract {
 								// occupation_code.getBytes().length);
 								data.setOccupation_code(occupation_code);
 								if (ETL_Tool_FormatCheck.isEmpty(occupation_code)) {
-									data.setError_mark("Y");
+//									data.setError_mark("Y");
+									// 預設值 - 自然人:211, 法人:N/A
+									if (isPersonal(entity_type, gender)) {
+										data.setOccupation_code("211");
+									} else {
+										data.setOccupation_code("N/A");
+									}
+									
 									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 											String.valueOf(rowCount), "職業/行業", "空值"));
 								} else {
@@ -574,13 +613,19 @@ public class ETL_E_PARTY extends Extract {
 									} else {
 										if (isPersonal(entity_type, gender)) {
 											if (!checkMaps.get("c-20-1").containsKey(occupation_code.trim())) {
-												data.setError_mark("Y");
+//												data.setError_mark("Y");
+												// 預設值 - 自然人:211, 法人:N/A
+												data.setOccupation_code("211");
+												
 												errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 														String.valueOf(rowCount), "職業", "非預期:" + occupation_code));
 											}
 										} else {
 											if (!checkMaps.get("c-20-2").containsKey(occupation_code.trim())) {
-												data.setError_mark("Y");
+//												data.setError_mark("Y");
+												// 預設值 - 自然人:211, 法人:N/A
+												data.setOccupation_code("N/A");
+												
 												errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 														String.valueOf(rowCount), "行業", "非預期:" + occupation_code));
 											}
@@ -651,12 +696,17 @@ public class ETL_E_PARTY extends Extract {
 								data.setNationality_code_2(nationality_code_2);
 								if (advancedCheck && !ETL_Tool_FormatCheck.isEmpty(nationality_code_2)
 										&& !checkMaps.get("c-27").containsKey(nationality_code_2)) {
-									data.setError_mark("Y");
+//									data.setError_mark("Y");
+									// 預設值 - 空白
+									data.setNationality_code_2("  ");
+									
 									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 											String.valueOf(rowCount), "第二國籍", "非預期:" + nationality_code_2));
 								} else if ("　".equals(nationality_code_2)) { // 國籍代碼防全形空白錯誤  2018.03.28
+//									data.setError_mark("Y");
+									// 預設值 - 空白
 									data.setNationality_code_2("  ");
-									data.setError_mark("Y");
+									
 									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 											String.valueOf(rowCount), "第二國籍", "全形空白錯誤"));
 								}
@@ -761,11 +811,17 @@ public class ETL_E_PARTY extends Extract {
 								// System.out.println("顧客AUM餘額 c-37(14):" +
 								// total_asset.getBytes().length);
 								if (ETL_Tool_FormatCheck.isEmpty(total_asset)) { 
-									data.setError_mark("Y"); 
+//									data.setError_mark("Y"); 
+									// 預設值 - 0
+									data.setTotal_asset(ETL_Tool_StringX.strToBigDecimal("0", 2));
+									
 									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", 
 									String.valueOf(rowCount), "顧客AUM餘額", "空值")); 
 								} else if (!ETL_Tool_FormatCheck.checkNum(total_asset)) { 
-									data.setError_mark("Y"); 
+//									data.setError_mark("Y");
+									// 預設值 - 0
+									data.setTotal_asset(ETL_Tool_StringX.strToBigDecimal("0", 2));
+									
 									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", 
 									String.valueOf(rowCount), "顧客AUM餘額", "格式錯誤:" + total_asset)); 
 								} else {
@@ -777,11 +833,17 @@ public class ETL_E_PARTY extends Extract {
 								// System.out.println("信託客戶AUM餘額 c-38(14):" +
 								// trust_total_asset.getBytes().length);
 								if (ETL_Tool_FormatCheck.isEmpty(trust_total_asset)) { 
-									data.setError_mark("Y"); 
+//									data.setError_mark("Y");
+									// 預設值 - 0
+									data.setTrust_total_asset(ETL_Tool_StringX.strToBigDecimal("0", 2));
+									
 									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", 
 									String.valueOf(rowCount), "信託客戶AUM餘額", "空值")); 
 								} else if (!ETL_Tool_FormatCheck.checkNum(trust_total_asset)) { 
-									data.setError_mark("Y"); 
+//									data.setError_mark("Y"); 
+									// 預設值 - 0
+									data.setTrust_total_asset(ETL_Tool_StringX.strToBigDecimal("0", 2));
+									
 									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", 
 									String.valueOf(rowCount), "信託客戶AUM餘額", "格式錯誤:" + trust_total_asset)); 
 								} else {
@@ -795,11 +857,17 @@ public class ETL_E_PARTY extends Extract {
 
 								// 異動代號檢核
 								if (ETL_Tool_FormatCheck.isEmpty(change_code)) {
-									data.setError_mark("Y");
+//									data.setError_mark("Y");
+									// 預設值 - 更新
+									data.setChange_code("U");
+									
 									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 											String.valueOf(rowCount), "異動代號", "空值"));
 								} else if (advancedCheck && !checkMaps.get("c-4-2").containsKey(change_code)) {
-									data.setError_mark("Y");
+//									data.setError_mark("Y");
+									// 預設值 - 更新
+									data.setChange_code("U");
+									
 									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 											String.valueOf(rowCount), "異動代號", "非預期:" + change_code));
 								}
@@ -834,7 +902,10 @@ public class ETL_E_PARTY extends Extract {
 								data.setDate_of_birth(ETL_Tool_StringX.toUtilDate(date_of_birth));
 								if (advancedCheck && !ETL_Tool_FormatCheck.isEmpty(date_of_birth)
 										&& !ETL_Tool_FormatCheck.checkDate(date_of_birth)) {
-									data.setError_mark("Y");
+//									data.setError_mark("Y");
+									// 預設值 - 1900-01-01
+									data.setDate_of_birth(ETL_Tool_StringX.toUtilDate("19000101"));
+									
 									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 											String.valueOf(rowCount), "出生年月日/創立日期", "日期格式不正確:" + date_of_birth));
 								}
@@ -848,12 +919,18 @@ public class ETL_E_PARTY extends Extract {
 								data.setNationality_code(nationality_code);
 								if (advancedCheck && !ETL_Tool_FormatCheck.isEmpty(nationality_code)
 										&& !checkMaps.get("c-13").containsKey(nationality_code)) {
-									data.setError_mark("Y");
+//									data.setError_mark("Y");
+									// 預設值 - TW
+									data.setNationality_code("TW");
+									
 									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 											String.valueOf(rowCount), "國籍", "非預期:" + nationality_code));
 								} else if ("　".equals(nationality_code)) { // 國籍代碼防全形空白錯誤  2018.03.28
-									data.setNationality_code("  ");
-									data.setError_mark("Y");
+//									data.setNationality_code("  ");
+//									data.setError_mark("Y");
+									// 預設值 - TW
+									data.setNationality_code("TW");
+									
 									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 											String.valueOf(rowCount), "國籍", "全形空白錯誤"));
 								}
@@ -898,13 +975,19 @@ public class ETL_E_PARTY extends Extract {
 									} else {
 										if (isPersonal(entity_type, gender)) {
 											if (!checkMaps.get("c-20-1").containsKey(occupation_code.trim())) {
-												data.setError_mark("Y");
+//												data.setError_mark("Y");
+												// 預設值 - 自然人:211, 法人:N/A
+												data.setOccupation_code("211");
+												
 												errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 														String.valueOf(rowCount), "職業", "非預期:" + occupation_code));
 											}
 										} else {
 											if (!checkMaps.get("c-20-2").containsKey(occupation_code.trim())) {
-												data.setError_mark("Y");
+//												data.setError_mark("Y");
+												// 預設值 - 自然人:211, 法人:N/A
+												data.setOccupation_code("N/A");
+												
 												errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 														String.valueOf(rowCount), "行業", "非預期:" + occupation_code));
 											}
@@ -960,12 +1043,17 @@ public class ETL_E_PARTY extends Extract {
 								data.setNationality_code_2(nationality_code_2);
 								if (advancedCheck && !ETL_Tool_FormatCheck.isEmpty(nationality_code_2)
 										&& !checkMaps.get("c-27").containsKey(nationality_code_2)) {
-									data.setError_mark("Y");
+//									data.setError_mark("Y");
+									// 預設值 - 空白
+									data.setNationality_code_2("  ");
+									
 									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 											String.valueOf(rowCount), "第二國籍", "非預期:" + nationality_code_2));
 								} else if ("　".equals(nationality_code_2)) { // 國籍代碼防全形空白錯誤  2018.03.28
+//									data.setError_mark("Y");
+									// 預設值 - 空白
 									data.setNationality_code_2("  ");
-									data.setError_mark("Y");
+									
 									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 											String.valueOf(rowCount), "第二國籍", "全形空白錯誤"));
 								}
@@ -1048,11 +1136,17 @@ public class ETL_E_PARTY extends Extract {
 								// 顧客AUM餘額 c-37(14)
 								String total_asset = strQueue.popBytesString(14);
 								if (ETL_Tool_FormatCheck.isEmpty(total_asset)) { 
-									data.setError_mark("Y"); 
+//									data.setError_mark("Y"); 
+									// 預設值 - 0
+									data.setTotal_asset(ETL_Tool_StringX.strToBigDecimal("0", 2));
+									
 									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", 
 									String.valueOf(rowCount), "顧客AUM餘額", "空值")); 
 								} else if (!ETL_Tool_FormatCheck.checkNum(total_asset)) { 
-									data.setError_mark("Y"); 
+//									data.setError_mark("Y"); 
+									// 預設值 - 0
+									data.setTotal_asset(ETL_Tool_StringX.strToBigDecimal("0", 2));
+									
 									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", 
 									String.valueOf(rowCount), "顧客AUM餘額", "格式錯誤:" + total_asset)); 
 								} else {
@@ -1062,11 +1156,17 @@ public class ETL_E_PARTY extends Extract {
 								// 信託客戶AUM餘額 c-38(14)
 								String trust_total_asset = strQueue.popBytesString(14);
 								if (ETL_Tool_FormatCheck.isEmpty(trust_total_asset)) { 
-									data.setError_mark("Y"); 
+//									data.setError_mark("Y");
+									// 預設值 - 0
+									data.setTrust_total_asset(ETL_Tool_StringX.strToBigDecimal("0", 2));
+									
 									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", 
 									String.valueOf(rowCount), "信託客戶AUM餘額", "空值")); 
 								} else if (!ETL_Tool_FormatCheck.checkNum(trust_total_asset)) { 
-									data.setError_mark("Y"); 
+//									data.setError_mark("Y");
+									// 預設值 - 0
+									data.setTrust_total_asset(ETL_Tool_StringX.strToBigDecimal("0", 2));
+									
 									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", 
 									String.valueOf(rowCount), "信託客戶AUM餘額", "格式錯誤:" + trust_total_asset)); 
 								} else {

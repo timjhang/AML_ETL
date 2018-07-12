@@ -18,7 +18,7 @@ import tw.com.pershing.databean.ETLresponse;
 @Path("/initETLserver")
 public class InitETLserver {
 	
-	// test : http://localhost:8080/AML_ETL/rest/clearETLserver/WS1
+	// test : http://localhost:8080/AML_ETL/rest/initETLserver/WS1
 	
 	@GET
 	@Path("/WS1")

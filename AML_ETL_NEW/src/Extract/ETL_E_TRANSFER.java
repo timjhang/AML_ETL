@@ -469,15 +469,19 @@ public class ETL_E_TRANSFER extends Extract {
 								data.setError_mark("Y");
 								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 										String.valueOf(rowCount), "匯款銀行BIC 編碼", "空值"));
-							} else if (ordering_bank_bic.length() < 6) {
-								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "匯款銀行BIC 編碼", "長度小於6:" + ordering_bank_bic));
-							} else if (!checkMaps.get("BIC")
-									.containsKey(getCOMM_NATIONALITY_CODE(ordering_bank_bic.trim()))) {
-								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "匯款銀行BIC 編碼", "非預期:" + ordering_bank_bic));
+							} else {
+								if (("N/A".equals(ordering_bank_bic.trim()))) {
+
+								} else if (ordering_bank_bic.length() < 6) {
+									data.setError_mark("Y");
+									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+											String.valueOf(rowCount), "匯款銀行BIC 編碼", "長度小於6:" + ordering_bank_bic));
+								} else if (!checkMaps.get("BIC")
+										.containsKey(getCOMM_NATIONALITY_CODE(ordering_bank_bic.trim()))) {
+									data.setError_mark("Y");
+									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+											String.valueOf(rowCount), "匯款銀行BIC 編碼", "非預期:" + ordering_bank_bic));
+								}
 							}
 
 							// 受款人銀行帳戶編號 X(50) *
@@ -509,16 +513,20 @@ public class ETL_E_TRANSFER extends Extract {
 								data.setError_mark("Y");
 								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 										String.valueOf(rowCount), "受款銀行BIC 編碼", "空值"));
-							} else if (beneficiary_bank_bic.length() < 6) {
-								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(beneficiary_bank_bic), "受款銀行BIC 編碼",
-										"長度小於6:" + beneficiary_bank_bic));
-							} else if (!checkMaps.get("BIC")
-									.containsKey(getCOMM_NATIONALITY_CODE(beneficiary_bank_bic.trim()))) {
-								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "受款銀行BIC 編碼", "非預期:" + beneficiary_bank_bic));
+							} else {
+								if (("N/A".equals(beneficiary_bank_bic.trim()))) {
+
+								} else if (beneficiary_bank_bic.length() < 6) {
+									data.setError_mark("Y");
+									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+											String.valueOf(beneficiary_bank_bic), "受款銀行BIC 編碼",
+											"長度小於6:" + beneficiary_bank_bic));
+								} else if (!checkMaps.get("BIC")
+										.containsKey(getCOMM_NATIONALITY_CODE(beneficiary_bank_bic.trim()))) {
+									data.setError_mark("Y");
+									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+											String.valueOf(rowCount), "受款銀行BIC 編碼", "非預期:" + beneficiary_bank_bic));
+								}
 							}
 
 							// 交易類別 X(04) *
