@@ -1,5 +1,6 @@
 package Bean;
 
+import Tool.ETL_Tool_DM_ParseFileName;
 import Tool.ETL_Tool_ParseFileName;
 
 public class ETL_Bean_ErrorLog_Data {
@@ -64,6 +65,20 @@ public class ETL_Bean_ErrorLog_Data {
 		this.RECORD_DATE = pfn.getRecord_Date();
 		this.FILE_TYPE = pfn.getFile_Type();
 		this.FILE_NAME = pfn.getFile_Name();
+		this.UPLOAD_NO = UPLOAD_NO;
+		this.STEP_TYPE = STEP_TYPE;
+		this.ROW_COUNT = ROW_COUNT;
+		this.FIELD_NAME = FIELD_NAME;
+		this.ERROR_DESCRIPTION = ERROR_DESCRIPTION;
+		this.SRC_FILE = pfn.getFileName();
+	}
+	
+	// DM版本
+	public ETL_Bean_ErrorLog_Data(ETL_Tool_DM_ParseFileName pfn, String UPLOAD_NO, String STEP_TYPE, String ROW_COUNT, String FIELD_NAME, String ERROR_DESCRIPTION) {
+		this.BATCH_NO = pfn.getBatch_no();
+		this.CENTRAL_NO = pfn.getCentral_no();
+		this.RECORD_DATE = pfn.getRecord_date();
+		this.FILE_NAME = pfn.getFile_name();
 		this.UPLOAD_NO = UPLOAD_NO;
 		this.STEP_TYPE = STEP_TYPE;
 		this.ROW_COUNT = ROW_COUNT;

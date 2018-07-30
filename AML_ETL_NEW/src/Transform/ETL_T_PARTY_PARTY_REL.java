@@ -2,6 +2,7 @@ package Transform;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Struct;
 import java.sql.Types;
 
@@ -33,14 +34,16 @@ public class ETL_T_PARTY_PARTY_REL extends Transform {
 	public void trans_to_PARTY_PARTY_REL_LOAD(ETL_Bean_LogData logData) {
 		
 		System.out.println("#######Transform - ETL_T_PARTY_PARTY_REL - Start");
+		Connection con = null;
+		CallableStatement cstmt = null;
 		
 		try {
 			
 			// TODO
 			String sql = "{call " + ETL_Profile.db2TableSchema + ".Transform.TempTo_PARTY_PARTY_REL_LOAD(?,?,?)}";
 			
-			Connection con = ConnectionHelper.getDB2Connection();
-			CallableStatement cstmt = con.prepareCall(sql);
+			con = ConnectionHelper.getDB2Connection();
+			cstmt = con.prepareCall(sql);
 			
 			Struct dataStruct = con.createStruct("T_LOGDATA", ETL_Tool_CastObjUtil.castObjectArr(logData));
 			
@@ -59,6 +62,20 @@ public class ETL_T_PARTY_PARTY_REL extends Transform {
 			
 		} catch (Exception ex) {
 			ex.printStackTrace();
+		} finally {
+			try {
+				// 資源後開,先關
+				if (cstmt != null) {
+					cstmt.close();
+				}
+				if (con != null) {
+					con.close();
+				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
 		}
 		
 		System.out.println("#######Transform - ETL_T_PARTY_PARTY_REL - End");

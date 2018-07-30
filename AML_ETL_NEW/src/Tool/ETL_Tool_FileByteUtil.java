@@ -40,54 +40,60 @@ public class ETL_Tool_FileByteUtil {
 		String theme = clazz.getSimpleName();
 
 		switch (theme) {
-		case "ETL_E_PARTY":
-			this.buffer_size = ETL_Profile.ETL_E_PARTY;
-			break;
-		case "ETL_E_PARTY_PARTY_REL":
-			this.buffer_size = ETL_Profile.ETL_E_PARTY_PARTY_REL;
-			break;
-		case "ETL_E_PARTY_PHONE":
-			this.buffer_size = ETL_Profile.ETL_E_PARTY_PHONE;
-			break;
-		case "ETL_E_PARTY_ADDRESS":
-			this.buffer_size = ETL_Profile.ETL_E_PARTY_ADDRESS;
-			break;
-		case "ETL_E_ACCOUNT":
-			this.buffer_size = ETL_Profile.ETL_E_ACCOUNT;
-			break;
-		case "ETL_E_TRANSACTION":
-			this.buffer_size = ETL_Profile.ETL_E_TRANSACTION;
-			break;
-		case "ETL_E_TRANSACTION_OLD":
-			this.buffer_size = ETL_Profile.ETL_E_TRANSACTION_OLD;
-			break;
-		case "ETL_E_LOAN_DETAIL":
-			this.buffer_size = ETL_Profile.ETL_E_LOAN_DETAIL;
-			break;
-		case "ETL_E_LOAN":
-			this.buffer_size = ETL_Profile.ETL_E_LOAN;
-			break;
-		case "ETL_E_COLLATERAL":
-			this.buffer_size = ETL_Profile.ETL_E_COLLATERAL;
-			break;
-		case "ETL_E_GUARANTOR":
-			this.buffer_size = ETL_Profile.ETL_E_GUARANTOR;
-			break;
-		case "ETL_E_FX_RATE":
-			this.buffer_size = ETL_Profile.ETL_E_FX_RATE;
-			break;
-		case "ETL_E_SERVICE":
-			this.buffer_size = ETL_Profile.ETL_E_SERVICE;
-			break;
-		case "ETL_E_TRANSFER":
-			this.buffer_size = ETL_Profile.ETL_E_TRANSFER;
-			break;
-		case "ETL_E_FCX":
-			this.buffer_size = ETL_Profile.ETL_E_FCX;
-			break;
-		case "ETL_E_CALENDAR":
-			this.buffer_size = ETL_Profile.ETL_E_CALENDAR;
-			break;
+			case "ETL_E_PARTY":
+				this.buffer_size = ETL_Profile.ETL_E_PARTY;
+				break;
+			case "ETL_E_PARTY_PARTY_REL":
+				this.buffer_size = ETL_Profile.ETL_E_PARTY_PARTY_REL;
+				break;
+			case "ETL_E_PARTY_PHONE":
+				this.buffer_size = ETL_Profile.ETL_E_PARTY_PHONE;
+				break;
+			case "ETL_E_PARTY_ADDRESS":
+				this.buffer_size = ETL_Profile.ETL_E_PARTY_ADDRESS;
+				break;
+			case "ETL_E_ACCOUNT":
+				this.buffer_size = ETL_Profile.ETL_E_ACCOUNT;
+				break;
+			case "ETL_E_TRANSACTION":
+				this.buffer_size = ETL_Profile.ETL_E_TRANSACTION;
+				break;
+			case "ETL_E_TRANSACTION_OLD":
+				this.buffer_size = ETL_Profile.ETL_E_TRANSACTION_OLD;
+				break;
+			case "ETL_E_LOAN_DETAIL":
+				this.buffer_size = ETL_Profile.ETL_E_LOAN_DETAIL;
+				break;
+			case "ETL_E_LOAN":
+				this.buffer_size = ETL_Profile.ETL_E_LOAN;
+				break;
+			case "ETL_E_COLLATERAL":
+				this.buffer_size = ETL_Profile.ETL_E_COLLATERAL;
+				break;
+			case "ETL_E_GUARANTOR":
+				this.buffer_size = ETL_Profile.ETL_E_GUARANTOR;
+				break;
+			case "ETL_E_FX_RATE":
+				this.buffer_size = ETL_Profile.ETL_E_FX_RATE;
+				break;
+			case "ETL_E_SERVICE":
+				this.buffer_size = ETL_Profile.ETL_E_SERVICE;
+				break;
+			case "ETL_E_TRANSFER":
+				this.buffer_size = ETL_Profile.ETL_E_TRANSFER;
+				break;
+			case "ETL_E_FCX":
+				this.buffer_size = ETL_Profile.ETL_E_FCX;
+				break;
+			case "ETL_E_CALENDAR":
+				this.buffer_size = ETL_Profile.ETL_E_CALENDAR;
+				break;
+			case "ETL_DM_ACCTMAPPING_LOAD":
+				this.buffer_size = ETL_Profile.ETL_DM_ACCTMAPPING_LOAD;
+				break;
+			case "ETL_DM_BRANCHMAPPING_LOAD":
+				this.buffer_size = ETL_Profile.ETL_DM_BRANCHMAPPING_LOAD;
+				break;
 		}
 	}
 
@@ -281,6 +287,61 @@ public class ETL_Tool_FileByteUtil {
 
 		System.out.println(new String(line, "big5"));
 		System.out.println(new String(line));
+	}
+	
+	public int isDMFileOK(ETL_Tool_DM_ParseFileName pfn, String upload_no, String path) throws Exception {
+
+		// ETL_Error Log寫入輔助工具
+		ETL_P_ErrorLog_Writer errWriter = new ETL_P_ErrorLog_Writer();
+
+		// 1:true 2: false 如格式都正確則是資料總筆數
+		int isFileOK = 0;
+		boolean isInsert = false;
+		byte[]bytes =new byte[99999999];
+		
+		FileInputStream fileInputStream = new FileInputStream(path);
+		ETL_Tool_JBReader bufferedReader = new ETL_Tool_JBReader(fileInputStream, buffer_size);
+
+		byte[] line = null;
+		byte head = (byte) 49;
+		byte body = (byte) 50;
+		byte foot = (byte) 51;
+		
+		int index = 0;
+		while ((line = bufferedReader.readLineInBinary()) != null) {
+			bytes[index] = line[0];
+			index++;
+		}
+
+		if (bytes.length < 2) {
+			return isFileOK;
+		}
+
+		for (int i = 0; i < index; i++) {
+			byte now = bytes[i];
+
+			if (i == 0) {
+				isFileOK = (head == now) ? 1 : 0;
+				// break;
+			} else if (i != (index - 1)) {
+				isFileOK = (body == now) ? 1 : 0;
+			} else {
+				isFileOK = (foot == now) ? 1 : 0;
+			}
+
+			if (isFileOK == 0) {
+				isInsert = true;
+				
+				// 寫入Error Log
+				errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", String.valueOf(i + 1), "區別碼",
+						"解析檔案出現嚴重錯誤-區別碼錯誤"));
+				//System.out.println("第" + i + "筆");
+				errWriter.insert_Error_Log();
+			}
+
+		}
+
+		return (isInsert)? 0 : index;
 	}
 
 	public void main2(String[] args) throws Exception {

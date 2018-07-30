@@ -2,7 +2,10 @@ package Tool;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
+import FTP.ETL_SFTP;
 
 public class ETL_Tool_FileReader {
 	
@@ -138,4 +141,64 @@ public class ETL_Tool_FileReader {
 		return tartgetFileList;
 	}
 
+	// 取得目標檔名資料List, DM版本
+	public static List<File> getTRTargetFileList(String hostName, String port, String username, String password,
+			String directory, String savePath, String fileTypeName, Date targetDate) throws Exception {
+		
+		String recordDateStr = "";
+		String targetDateStr = ""; 
+
+		// 取得檔名list
+		List<String> fileNameList = ETL_SFTP.listFiles(hostName, Integer.valueOf(port), username, password, directory);
+		
+		System.out.println("ETL_Tool_FileReader directory:" + directory);
+
+		List<String> fileNameListAllow = new ArrayList<String>();
+
+		ETL_Tool_DM_ParseFileName pfn;
+		for (int i = 0; i < fileNameList.size(); i++) {
+
+			try {
+				pfn = new ETL_Tool_DM_ParseFileName(fileNameList.get(i));
+			} catch (Exception ex) {
+				continue;
+			}
+			
+			recordDateStr = ETL_Tool_StringX.toUtilDateStr(pfn.getRecord_date(), "yyyy-MM-dd");
+			targetDateStr = ETL_Tool_StringX.toUtilDateStr(targetDate, "yyyy-MM-dd");
+			
+			System.out.println("pfn.getFile_name:" + pfn.getFile_name());
+			System.out.println("fileTypeName:" + fileTypeName);
+			System.out.println("recordDateStr:" + recordDateStr);
+			System.out.println("targetDateStr:" + targetDateStr);
+			
+			
+			// 檔名分析後 符合檔名進入list
+			if (pfn.getFile_name().equalsIgnoreCase(fileTypeName)&&(recordDateStr.equals(targetDateStr))) {
+				fileNameListAllow.add(pfn.getFileName());
+			}
+		}
+
+		System.out.println("fileNameListAllow.size:" + fileNameListAllow.size());
+
+		List<File> localFileList = new ArrayList<File>();
+		// 下載檔案至本地
+		for (int i = 0; i < fileNameListAllow.size(); i++) {
+			if(ETL_SFTP.download(hostName, port, username, password, savePath + "\\" + fileNameListAllow.get(i),
+					directory + fileNameListAllow.get(i))) {
+				
+				File localFile = new File(savePath + "\\" + fileNameListAllow.get(i));
+				localFileList.add(localFile);
+			}
+		}
+
+		// 從SFTP刪除檔案
+		// for (int i = 0; i < fileNameListAllow.size(); i++) {
+		// ETL_SFTP.delete(hostName, port, username, password, "/" +
+		// fileNameListAllow.get(i));
+		// }
+
+		return localFileList;
+	}
+	
 }

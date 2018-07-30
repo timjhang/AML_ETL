@@ -237,9 +237,7 @@ public class Efunction {
 			
 			// for test
 			List<String> logs = new ArrayList<String>();
-			logs.add("Tim");
-			logs.add("Ian");
-			logs.add("Kevin");
+			logs.add("Finish");
 			response.setLogs(logs);
 		
 		} catch (Exception ex) {

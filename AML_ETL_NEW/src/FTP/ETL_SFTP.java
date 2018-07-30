@@ -16,6 +16,7 @@ import org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 
@@ -79,23 +80,34 @@ public class ETL_SFTP {
 			Channel channel = sshSession.openChannel("sftp");
 			channel.connect();
 			sftp = (ChannelSftp) channel;
-			System.out.println("Connected to " + host);
+//			System.out.println("Connected to " + host);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return sftp;
 	}
 	
-	public static List<String> listFiles(String host, int port, String username, String password, String directory) throws SftpException {
+	public static List<String> listFiles(String host, int port, String username, String password, String directory) throws SftpException, JSchException {
+		System.out.println("listFiles " + directory + " listFiles start");
 		ChannelSftp sftp = connect(host, port, username, password);
 		List<String> result = new ArrayList<String>();
 		List<ChannelSftp.LsEntry> list = sftp.ls(directory);
-		
+
 		for (ChannelSftp.LsEntry entry : list) {
 			if (!".".equals(entry.getFilename()) && !"..".equals(entry.getFilename())) {
 				result.add(entry.getFilename());
 			}
 		}
+		
+		System.out.println("result size " +result.size());
+		
+		for(String str:result) {
+			System.out.println("str " + str);
+		}
+		
+		Session session=sftp.getSession();
+		sftp.disconnect();
+		session.disconnect();
 		
 		return result;
 	}
