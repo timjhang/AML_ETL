@@ -94,6 +94,9 @@ public class ETL_Tool_FileByteUtil {
 			case "ETL_DM_BRANCHMAPPING_LOAD":
 				this.buffer_size = ETL_Profile.ETL_DM_BRANCHMAPPING_LOAD;
 				break;
+			case "ETL_DM_IDMAPPING_LOAD":
+				this.buffer_size = ETL_Profile.ETL_DM_IDMAPPING_LOAD;
+				break;	
 		}
 	}
 

@@ -6,7 +6,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import Bean.ETL_Bean_DM_ACCTMAPPING_LOAD_Data;
+import Bean.ETL_Bean_DM_IDMAPPING_LOAD_Data;
 import Bean.ETL_Bean_ErrorLog_Data;
 import Bean.ETL_Bean_Response;
 import Bean.ETL_Bean_TRANSACTION_Data;
@@ -25,12 +25,12 @@ import Tool.ETL_Tool_FormatCheck;
 import Tool.ETL_Tool_StringQueue;
 import Tool.ETL_Tool_StringX;
 
-public class ETL_DM_ACCTMAPPING_LOAD {
+public class ETL_DM_IDMAPPING_LOAD {
 
 	// 欄位檢核用陣列
-		private String[][] checkMapArray = { { "domain_id", "COMM_DOMAIN_ID" } ,// 本會代號
-				{"COMM_CENTRAL_NO","COMM_CENTRAL_NO"} //中心代號
-		};
+	private String[][] checkMapArray = { { "domain_id", "COMM_DOMAIN_ID" } ,// 本會代號
+			{"COMM_CENTRAL_NO","COMM_CENTRAL_NO"}
+	};
 
 	// 欄位檢核用母Map
 	private Map<String, Map<String, String>> checkMaps;
@@ -44,12 +44,12 @@ public class ETL_DM_ACCTMAPPING_LOAD {
 	private int oneFileInsertErrorCount = 0;
 
 	// Data儲存List
-	private List<ETL_Bean_DM_ACCTMAPPING_LOAD_Data> datas = new ArrayList<ETL_Bean_DM_ACCTMAPPING_LOAD_Data>();
+	private List<ETL_Bean_DM_IDMAPPING_LOAD_Data> datas = new ArrayList<ETL_Bean_DM_IDMAPPING_LOAD_Data>();
 
-	public void read_DM_ACCTMAPPING_LOAD_File(String hostName, String port, String userName, String password,
+	public void read_DM_IDMAPPING_LOAD_File(String hostName, String port, String userName, String password,
 			String directory, String savePath, String batch_no, String exc_central_no ,String fileTypeName, Date targetDate) throws Exception {
 		
-		System.out.println("read_DM_ACCTMAPPING_LOAD_File Start");
+		System.out.println("read_DM_IDMAPPING_LOAD_File Start");
 		
 		String upload_no = "";
 
@@ -79,21 +79,18 @@ public class ETL_DM_ACCTMAPPING_LOAD {
 			// 解析fileName物件
 			ETL_Tool_DM_ParseFileName pfn = new ETL_Tool_DM_ParseFileName(fileName);
 
-			System.out.println("truncateMappingDataTable start");
-			// (1) 若目的檔(ACCTMAPPING)有資料則清空
-			ETL_P_DMData_Writer.truncateMappingDataTable("ACCTMAPPING", exc_central_no);
-			
-			System.out.println("truncateMappingDataTable end");
+			// (1) 若目的檔(IDMAPPING)有資料則清空
+			ETL_P_DMData_Writer.truncateMappingDataTable("IDMAPPING", exc_central_no);
 			
 		} else {// "file_log 無檔案 狀態S";
 
 			// 開始前ETL_FILE_Log寫入DB
-			ETL_P_Log.write_ETL_FILE_Log(batch_no, exc_central_no, targetDate, "", "ACCTMAPPING",
-					upload_no, "E", new Date(), null, 0, 0, 0, "ACCTMAPPING");
+			ETL_P_Log.write_ETL_FILE_Log(batch_no, exc_central_no, targetDate, "", "IDMAPPING",
+					upload_no, "E", new Date(), null, 0, 0, 0, "IDMAPPING");
 
 			// 執行錯誤更新ETL_FILE_Log
 			ETL_P_Log.update_End_ETL_FILE_Log(batch_no, exc_central_no,targetDate, "",
-					"ACCTMAPPING", upload_no, "E", new Date(), 0, 0, 0, "S", "無該日期之檔案");
+					"IDMAPPING", upload_no, "E", new Date(), 0, 0, 0, "S", "無該日期之檔案");
 
 			System.out.println("無該日期之檔案！");
 
@@ -101,8 +98,6 @@ public class ETL_DM_ACCTMAPPING_LOAD {
 
 		// 進行檔案處理
 		for (int i = 0; i < fileList.size(); i++) {
-			
-			System.out.println("開始進行檔案處理");
 		
 			// 開始執行時間
 			Date parseStartDate = new Date(); 
@@ -111,12 +106,10 @@ public class ETL_DM_ACCTMAPPING_LOAD {
 			File parseFile = fileList.get(i);
 
 			ETL_Tool_FileByteUtil fileByteUtil = new ETL_Tool_FileByteUtil(parseFile.getAbsolutePath(),
-					ETL_DM_ACCTMAPPING_LOAD.class);
+					ETL_DM_IDMAPPING_LOAD.class);
 
 			// 檔名
 			String fileName = parseFile.getName();
-			
-			System.out.println("檔案名稱"+fileName);
 
 			// 解析fileName物件
 			ETL_Tool_DM_ParseFileName pfn = new ETL_Tool_DM_ParseFileName(fileName);
@@ -132,7 +125,7 @@ public class ETL_DM_ACCTMAPPING_LOAD {
 
 			} catch (Exception ex) {
 				checkMaps = null;
-				System.out.println("ETL_DM_ACCTMAPPING_LOAD 抓取checkMaps資料有誤!");
+				System.out.println("ETL_DM_IDMAPPING_LOAD 抓取checkMaps資料有誤!");
 				ex.printStackTrace();
 			}
 
@@ -240,7 +233,7 @@ public class ETL_DM_ACCTMAPPING_LOAD {
 						strQueue.setTargetString();
 
 						// 生成一個Data
-						ETL_Bean_DM_ACCTMAPPING_LOAD_Data data = new ETL_Bean_DM_ACCTMAPPING_LOAD_Data(pfn);
+						ETL_Bean_DM_IDMAPPING_LOAD_Data data = new ETL_Bean_DM_IDMAPPING_LOAD_Data(pfn);
 						// 寫入資料行數
 						data.setRow_count(rowCount);
 						data.setError_mark("");
@@ -290,14 +283,14 @@ public class ETL_DM_ACCTMAPPING_LOAD {
 									String.valueOf(rowCount), "本會代號", "空值"));
 						}
 
-						// 舊帳號 R X(30)*
-						String old_account_id = strQueue.popBytesString(30);
-						data.setOld_account_id(old_account_id);
+						//舊顧客編號 R X(30)*
+						String old_party_id = strQueue.popBytesString(30);
+						data.setOld_party_id(old_party_id);
 
-						if (ETL_Tool_FormatCheck.isEmpty(old_account_id)) {
+						if (ETL_Tool_FormatCheck.isEmpty(old_party_id)) {
 							data.setError_mark("Y");
 							errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-									String.valueOf(rowCount), "舊帳號", "空值"));
+									String.valueOf(rowCount), "舊顧客編號", "空值"));
 						}
 
 						// 新資訊中心代碼 R X(03)*
@@ -324,14 +317,14 @@ public class ETL_DM_ACCTMAPPING_LOAD {
 									String.valueOf(rowCount), "新本會代號", "空值"));
 						}
 
-						// 新帳號 R X(30)*
-						String new_account_id = strQueue.popBytesString(30);
-						data.setNew_account_id(new_account_id);
+						// 新顧客編號 R X(30)*
+						String new_party_id = strQueue.popBytesString(30);
+						data.setNew_party_id(new_party_id);
 
-						if (ETL_Tool_FormatCheck.isEmpty(new_account_id)) {
+						if (ETL_Tool_FormatCheck.isEmpty(new_party_id)) {
 							data.setError_mark("Y");
 							errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-									String.valueOf(rowCount), "新帳號", "空值"));
+									String.valueOf(rowCount), "新顧客編號", "空值"));
 						}
 
 						// data list 加入一個檔案
@@ -375,13 +368,13 @@ public class ETL_DM_ACCTMAPPING_LOAD {
 					}
 				}
 
-				// ACCTMAPPING_Data寫入DB
-				insert_ACCTMAPPING_LOAD_Datas();
+				// IDMAPPING_Data寫入DB
+				insert_IDMAPPING_LOAD_Datas();
 
 				// 更新PK重複的ROW比較大的 ERROR_MARK='Y'
 				// 取得 ERROR是''的 為正確數量 扣掉 全部的數量 就是錯誤的數量
 				// 修正筆數, 考慮寫入資料庫時寫入失敗的狀況 當無法查到資料直接跳出
-				ETL_Bean_Response obj = ETL_P_DMData_Writer.checkAcctmappingData(exc_central_no, fileName);
+				ETL_Bean_Response obj = ETL_P_DMData_Writer.checkIdmappingData(exc_central_no, fileName);
 
 				Integer dataStatus = 0;
 
@@ -483,7 +476,6 @@ public class ETL_DM_ACCTMAPPING_LOAD {
 					file_exe_result = "S";
 					file_exe_result_description = "解析檔案出現嚴重錯誤";
 					processErrMsg = processErrMsg + pfn.getFileName() + "解析檔案出現嚴重錯誤\n";
-
 					System.out.println(fileFmtErrMsg);
 				} else if (dataStatus == 1) {
 					file_exe_result = "S";
@@ -491,6 +483,9 @@ public class ETL_DM_ACCTMAPPING_LOAD {
 				} else if (dataStatus == 2) {
 					file_exe_result = "S";
 					file_exe_result_description = processErrMsg + pfn.getFileName() + "整筆資料重複\n";
+				} else if (dataStatus == 3) {
+					file_exe_result = "D";
+					file_exe_result_description = "舊顧客編號與新顧客編號相同";
 				} else if (failureCount == 0) {
 					file_exe_result = "Y";
 					file_exe_result_description = "執行結果無錯誤資料";
@@ -518,7 +513,7 @@ public class ETL_DM_ACCTMAPPING_LOAD {
 
 				// 寫入Error_Log
 				ETL_P_Log.write_Error_Log(batch_no, exc_central_no, pfn.getRecord_date(), null, fileTypeName,
-						upload_no, "E", "0", "ETL_DM_ACCTMAPPING_LOAD","ETL_DM_ACCTMAPPING_LOAD程式處理錯誤:"+ ex.getMessage(), null);
+						upload_no, "E", "0", "ETL_DM_IDMAPPING_LOAD","ETL_DM_IDMAPPING_LOAD程式處理錯誤:"+ ex.getMessage(), null);
 
 				// 執行錯誤更新ETL_FILE_Log
 				ETL_P_Log.update_End_ETL_FILE_Log(pfn.getBatch_no(), exc_central_no, pfn.getRecord_date(), "",
@@ -530,45 +525,45 @@ public class ETL_DM_ACCTMAPPING_LOAD {
 
 		}
 		
-		System.out.println("read_DM_ACCTMAPPING_LOAD_File 執行結束");
+		System.out.println("read_DM_IDMAPPING_LOAD_File 執行結束");
 		
 	}
 
 	// List增加一個data
-	private void addData(ETL_Bean_DM_ACCTMAPPING_LOAD_Data data) throws Exception {
+	private void addData(ETL_Bean_DM_IDMAPPING_LOAD_Data data) throws Exception {
 		this.datas.add(data);
 		this.dataCount++;
 
 		if (dataCount == stageLimit) {
-			insert_ACCTMAPPING_LOAD_Datas();
+			insert_IDMAPPING_LOAD_Datas();
 		}
 	}
 
-	// 將ACCTMAPPING資料寫入資料庫
-	private void insert_ACCTMAPPING_LOAD_Datas() throws Exception {
+	// 將IDMAPPING資料寫入資料庫
+	private void insert_IDMAPPING_LOAD_Datas() throws Exception {
 		if (this.datas == null || this.datas.size() == 0) {
-			System.out.println("ETL_DM_ACCTMAPPING_LOAD - insert_ACCTMAPPING_LOAD_Datas 無寫入任何資料");
+			System.out.println("ETL_DM_IDMAPPING_LOAD - insert_IDMAPPING_LOAD_Datas 無寫入任何資料");
 			return;
 		}
 
 		InsertAdapter insertAdapter = new InsertAdapter();
 		// 呼叫寫入DB2 - SP
-		insertAdapter.setSql("{call SP_INSERT_ACCTMAPPING(?,?)}");
+		insertAdapter.setSql("{call SP_INSERT_IDMAPPING(?,?)}");
 		// DB2 type
-		insertAdapter.setCreateStructTypeName("T_ACCTMAPPING");
+		insertAdapter.setCreateStructTypeName("T_IDMAPPING");
 		// DB2 array type
-		insertAdapter.setCreateArrayTypesName("A_ACCTMAPPING");
+		insertAdapter.setCreateArrayTypesName("A_IDMAPPING");
 		insertAdapter.setTypeArrayLength(ETL_Profile.ErrorLog_Stage); // 設定上限寫入參數
 
 		Boolean isSuccess = ETL_P_Data_Writer.insertByDefineArrayListObject2(this.datas, insertAdapter);
 		int errorCount = insertAdapter.getErrorCount();
 
 		if (isSuccess) {
-			System.out.println("insert_ACCTMAPPING_LOAD_Datas 寫入 " + this.datas.size() + "(-" + errorCount + ")筆資料!");
+			System.out.println("insert_IDMAPPING_LOAD_Datas 寫入 " + this.datas.size() + "(-" + errorCount + ")筆資料!");
 			this.oneFileInsertErrorCount = this.oneFileInsertErrorCount + errorCount;
 																						
 		} else {
-			throw new Exception("insert_ACCTMAPPING_LOAD_Datas 發生錯誤");
+			throw new Exception("insert_IDMAPPING_LOAD_Datas 發生錯誤");
 		}
 		// 寫入後將計數與資料List清空
 		this.dataCount = 0;
@@ -577,7 +572,7 @@ public class ETL_DM_ACCTMAPPING_LOAD {
 	
 	public static void main(String args[]) throws Exception {
 		
-//		ETL_DM_ACCTMAPPING_LOAD obj = new ETL_DM_ACCTMAPPING_LOAD();
+//		ETL_DM_IDMAPPING_LOAD obj = new ETL_DM_IDMAPPING_LOAD();
 //		String hostName = "172.18.21.208";
 //		String port = "22";
 //		String userName	= "GAMLETL";
@@ -586,14 +581,33 @@ public class ETL_DM_ACCTMAPPING_LOAD {
 //		Date date = ETL_Tool_StringX.toUtilDate("20180608");
 //	
 //		String savePath = "C:\\ETL\\DM";
-//		String fileTypeName = "ACCTMAPPING";
+//		String fileTypeName = "IDMAPPING";
 //		
-//		obj.read_DM_ACCTMAPPING_LOAD_File(hostName, port, userName, password, directory, savePath, "06072","600", fileTypeName, date);
-//		
+//		obj.read_DM_IDMAPPING_LOAD_File(hostName, port, userName, password, directory, savePath, "06072","600", fileTypeName, date);
+		
+		// 欄位檢核用陣列
+		 String[][] checkMapArray = { { "domain_id", "COMM_DOMAIN_ID" } ,// 本會代號
+				{"COMM_CENTRAL_NO","COMM_CENTRAL_NO"}
+		};
+		Map<String, Map<String, String>>  checkMaps = new ETL_Q_ColumnCheckCodes().getCheckMaps(ETL_Tool_StringX.toUtilDate("20180713"), "600",
+				checkMapArray);
 		
 		
-//		ETL_P_DMData_Writer.truncateMappingDataTable("ACCTMAPPING", "600");
-//		
-//		System.out.println("結束");
+		Map<String, String> map =checkMaps.get("COMM_CENTRAL_NO");
+		
+//		Map<String, String> map =ETL_Q_ColumnCheckCodes.getCheckMap(ETL_Tool_StringX.toUtilDate("20180713"), "600", "COMM_CENTRAL_NO");
+//	
+		
+
+		
+		
+	     for (Object key : map.keySet()) {
+	            System.out.println(key + " : " + map.get(key));
+	        }
+		
+		System.out.println("執行結束");
+		
+		
+		
 	}
 }

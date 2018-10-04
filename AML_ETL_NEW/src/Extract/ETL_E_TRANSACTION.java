@@ -9,21 +9,15 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import Bean.ETL_Bean_ErrorLog_Data;
 import Bean.ETL_Bean_TRANSACTION_Data;
 import DB.ETL_P_Data_Writer;
 import DB.ETL_P_EData_Filter;
-import DB.ETL_P_ErrorLog_Writer;
 import DB.ETL_P_Log;
 import DB.ETL_Q_ColumnCheckCodes;
 import DB.InsertAdapter;
 import Profile.ETL_Profile;
-import Tool.ETL_Tool_FileByteUtil;
 import Tool.ETL_Tool_FileReader;
 import Tool.ETL_Tool_FormatCheck;
-import Tool.ETL_Tool_ParseFileName;
-import Tool.ETL_Tool_StringQueue;
-import Tool.ETL_Tool_StringX;
 
 public class ETL_E_TRANSACTION extends Extract {
 

@@ -41,6 +41,7 @@ public class CheckETLstatus {
 		  			response.setMsg("SUCCESS");
 		  		} else {
 		  			response.setMsg("FAILURE");
+		  			response.setError("ETL Server 執行程式所在ip不正確");
 		  		}
 		  		
 			} catch (Exception ex) {
@@ -49,6 +50,7 @@ public class CheckETLstatus {
 			
 		} else {
 			response.setMsg("FAILURE");
+			response.setError("呼叫字串非check");
 		}
 		
 		return response;

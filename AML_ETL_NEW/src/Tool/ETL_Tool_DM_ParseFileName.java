@@ -34,6 +34,18 @@ public class ETL_Tool_DM_ParseFileName {
 			throw new Exception("ETL_Tool_DM_ParseFileName 建立檔名有誤!!\n檔名副檔名格式錯誤");
 		}
 		
+		// 副檔名必要檢核
+		if (!"TXT".equals(fileName.split("\\.")[1].toUpperCase() )) {
+			throw new Exception("ETL_Tool_DM_ParseFileName 建立檔名有誤!!\n 該副檔名不為TXT");
+		}
+		
+		// 起頭為TR
+		if (!"TR".equals(fileName.split("\\_")[0])) {
+			System.out.println(fileName.split("\\_")[0].trim());
+			throw new Exception("ETL_Tool_DM_ParseFileName 建立檔名有誤!!\n 該檔名不為起頭不為TR");
+		}
+		
+		
 		String mainName = fileName.split("\\.")[0];
 		String source = mainName.substring(mainName.length() - 8, mainName.length());
 		
@@ -43,11 +55,20 @@ public class ETL_Tool_DM_ParseFileName {
 		this.record_date_str = source; // 寫入檔案日期文字(yyyyMMdd)
 		this.record_date = new SimpleDateFormat("yyyyMMdd").parse(source); // 寫入檔案日期
 		
+		if(!"600".equals(central_no)&&!"952".equals(central_no)) {
+			throw new Exception("單位錯誤");
+		}
+		
 		// 日期檢核
 		if (record_date == null) {
 			throw new Exception("ETL_Tool_DM_ParseFileName 建立檔名有誤!!\n檔名日期格式錯誤");
 		}
 	
+		if(!"BRANCHMAPPING".equals(file_name)&&!"ACCTMAPPING".equals(file_name)&&!"IDMAPPING".equals(file_name)) {
+			throw new Exception("ETL_Tool_DM_ParseFileName 建立檔名有誤!!\n");
+		}
+		
+
 	}
 
 	public String getCentral_no() {
@@ -99,7 +120,17 @@ public class ETL_Tool_DM_ParseFileName {
 	}
 	
 	public static  void main(String [] args) throws Exception {
-		ETL_Tool_DM_ParseFileName obj = new ETL_Tool_DM_ParseFileName("TR_018_BRANCHMAP_20180510.txt");
+		ETL_Tool_DM_ParseFileName obj = new ETL_Tool_DM_ParseFileName("TR_600_BRANCHMAPPING_20180510.txt");
+		
+		System.out.println(obj.getFile_name());
+		System.out.println(obj.getFileName());
+		
+		obj = new ETL_Tool_DM_ParseFileName("TR_600_IDMAPPING_20180510.txt");
+		
+		System.out.println(obj.getFile_name());
+		System.out.println(obj.getFileName());
+		
+		obj = new ETL_Tool_DM_ParseFileName("TR_600_ACCTMAPPING_20180510.txt");
 		
 		System.out.println(obj.getFile_name());
 		System.out.println(obj.getFileName());

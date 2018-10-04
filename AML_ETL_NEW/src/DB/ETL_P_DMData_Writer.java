@@ -58,7 +58,7 @@ public class ETL_P_DMData_Writer {
 			}
 
 		}
-
+		System.out.println("isSuccess: "+isSuccess);
 		if (isSuccess) {
 			sql = "{call " + ETL_Profile.db2TableSchema + ".DM.truncateTable(?,?,?,?)}";
 			try {
@@ -206,6 +206,48 @@ public class ETL_P_DMData_Writer {
 		ETL_Bean_Response response = new ETL_Bean_Response();
 
 		String sql = "{call " + ETL_Profile.db2TableSchema + ".DM.checkBranchmappingData(?,?,?,?,?,?)}";
+
+		Connection con = ConnectionHelper.getDB2Connection();
+
+		CallableStatement cstmt = con.prepareCall(sql);
+
+		cstmt.registerOutParameter(1, Types.INTEGER); // v_returnCode
+		cstmt.setString(2, central_no); // v_central_no
+		cstmt.setString(3, fileName); // v_fileName
+		cstmt.registerOutParameter(4, Types.INTEGER); // v_DataStatus
+		cstmt.registerOutParameter(5, Types.INTEGER); // v_SuccessCount
+		cstmt.registerOutParameter(6, Types.VARCHAR); // v_ErrorMsg
+
+		cstmt.execute();
+
+		int returnCode = cstmt.getInt(1);
+
+		if (returnCode != 0) {
+			String errorMessage = cstmt.getString(6);
+			System.out.println("Error Code = " + returnCode + ", Error Message : " + errorMessage);
+			throw new Exception(errorMessage);
+		} else {
+			Integer dataStatus = cstmt.getInt(4);
+			Integer successCount = cstmt.getInt(5);
+
+			response.setDataStatus(dataStatus);
+			response.setSuccessCount(successCount);
+			response.setSuccess(true);
+			return response;
+
+		}
+	}
+	
+	// checkData
+	public static ETL_Bean_Response checkIdmappingData(String central_no, String fileName) throws Exception {
+
+		// -- 將pk重複的updata errorMark = Y v_DataStatus1Count 舊資料重複 =1 v_DataStatus2Count
+		// 整筆資料重複 = 2
+		// PROCEDURE checkAcctmappingData(v_returnCode out INT,v_DataStatus out
+		// INT,v_SuccessCount out INT, v_ErrorMsg out VARCHAR)
+		ETL_Bean_Response response = new ETL_Bean_Response();
+
+		String sql = "{call " + ETL_Profile.db2TableSchema + ".DM.checkIdmappingData(?,?,?,?,?,?)}";
 
 		Connection con = ConnectionHelper.getDB2Connection();
 

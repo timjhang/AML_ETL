@@ -1,5 +1,6 @@
 package tw.com.pershing;
 
+import java.io.File;
 import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -32,7 +33,9 @@ import Extract.ETL_E_TRANSFER;
 import Extract.ETL_E_Wrong_File;
 import Migration.ETL_DM_ACCTMAPPING_LOAD;
 import Migration.ETL_DM_BRANCHMAPPING_LOAD;
+import Migration.ETL_DM_IDMAPPING_LOAD;
 import Profile.ETL_Profile;
+import Tool.ETL_Tool_Folder;
 import Tool.ETL_Tool_StringX;
 import tw.com.pershing.databean.ETLresponse;
 
@@ -86,18 +89,13 @@ public class DMfunction {
 			String directory = filePath;
 			String savePath = ETL_Profile.ETL_DM_SAVEPATH;
 			
-			
-			System.out.println("ETL_C_Profile.sftp_hostName:"+ETL_C_Profile.sftp_hostName); // for test
-			System.out.println("ETL_C_Profile.sftp_port:"+ETL_C_Profile.sftp_port); // for test
-			System.out.println("ETL_C_Profile.sftp_username:"+ETL_C_Profile.sftp_username); // for test
-			System.out.println("ETL_C_Profile.sftp_password:"+ETL_C_Profile.sftp_password); // for test
-			System.out.println("ETL_C_Profile.directory:"+directory); // for test
-			System.out.println("ETL_C_Profile.savePath:"+savePath); // for test
-			
+			List<File> list = ETL_Tool_Folder.listFilesForFolder(new File(savePath), ETL_Tool_Folder.Type.ALLFileKeepFolder);
+			ETL_Tool_Folder.dropFileByList(list);
 
 			ETL_P_DMData_Writer.truncateTable("ERROR_LOG");
 			ETL_P_DMData_Writer.truncateTable("ACCTMAPPING");
 			ETL_P_DMData_Writer.truncateTable("BRANCHMAPPING");
+			ETL_P_DMData_Writer.truncateTable("IDMAPPING");
 			
 			fileTypeName = "ACCTMAPPING";
 			new ETL_DM_ACCTMAPPING_LOAD().read_DM_ACCTMAPPING_LOAD_File(ETL_C_Profile.sftp_hostName, ETL_C_Profile.sftp_port, ETL_C_Profile.sftp_username, ETL_C_Profile.sftp_password, directory, savePath, batch_no, exc_central_no,fileTypeName, exc_record_date);
@@ -105,14 +103,12 @@ public class DMfunction {
 			fileTypeName = "BRANCHMAPPING";
 			new ETL_DM_BRANCHMAPPING_LOAD().read_DM_BRANCHMAPPING_LOAD_File(ETL_C_Profile.sftp_hostName, ETL_C_Profile.sftp_port, ETL_C_Profile.sftp_username, ETL_C_Profile.sftp_password, directory, savePath, batch_no,exc_central_no ,fileTypeName, exc_record_date);
 			
+			fileTypeName = "IDMAPPING";
+			new ETL_DM_IDMAPPING_LOAD().read_DM_IDMAPPING_LOAD_File(ETL_C_Profile.sftp_hostName, ETL_C_Profile.sftp_port, ETL_C_Profile.sftp_username, ETL_C_Profile.sftp_password, directory, savePath, batch_no,exc_central_no ,fileTypeName, exc_record_date);
+			
 			// 執行成功
 			response.setMsg("SUCCESS");
 			
-			// for test
-			List<String> logs = new ArrayList<String>();
-			logs.add("Finish");
-			response.setLogs(logs);
-		
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			response.setMsg("Exception");

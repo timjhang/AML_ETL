@@ -766,9 +766,9 @@ public class ETL_E_PARTY_ADDRESS extends Extract {
 
 		// 讀取測試資料，並運行程式
 		ETL_E_PARTY_ADDRESS one = new ETL_E_PARTY_ADDRESS();
-		String filePath = "D:\\PSC\\Projects\\AgriBank\\UNIT_TEST";
+		String filePath = "C:\\Users\\10404003\\Desktop\\農金\\2018\\180913\\temp\\952";
 		String fileTypeName = "PARTY_ADDRESS";
-		one.read_Party_Address_File(filePath, fileTypeName, "PSCETL04", "600",
-				new SimpleDateFormat("yyyyMMdd").parse("20180227"), "001", "ETL_E_PARTY_ADDRESS");
+		one.read_Party_Address_File(filePath, fileTypeName, "TES00002", "952",
+				new SimpleDateFormat("yyyyMMdd").parse("20180913"), "001", "ETL_E_PARTY_ADDRESS");
 	}
 }

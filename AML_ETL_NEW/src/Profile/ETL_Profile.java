@@ -16,8 +16,8 @@ public class ETL_Profile {
 	
 	// Driver, Url, User, Password
 	public final static String db2Driver = "com.ibm.db2.jcc.DB2Driver";
-	private final static String db2SPSchema = "ADMINISTRATOR";
-	public final static String db2TableSchema = "ADMINISTRATOR";
+	private final static String db2SPSchema = "ETLUSR";
+	public final static String db2TableSchema = "ETLUSR";
 //	private final static String db2SPSchema = ETL_Tool_DES.decrypt("f36ddb910a7dafa79b9ec0da15a003be");
 //	public final static String db2TableSchema = ETL_Tool_DES.decrypt("f36ddb910a7dafa79b9ec0da15a003be");
 	
@@ -25,13 +25,13 @@ public class ETL_Profile {
 			"jdbc:db2://172.18.21.206:50000/ETLDB001:" +
 			"currentschema=" + db2SPSchema + ";" +
 			"currentFunctionPath=" + db2SPSchema + ";";
-//	public final static String db2User = "Administrator";
-//	public final static String db2Password = "9ol.)P:?";
+//	public final static String db2User = "ETLUSR";
+//	public final static String db2Password = "1qazXSW@";
 //	public final static String db2Url = 
 //			"jdbc:db2://localhost:50000/sample:" +
 //			"currentschema=" + db2SPSchema + ";" +
 //			"currentFunctionPath=" + db2SPSchema + ";";
-//	public final static String db2User = "administrator";
+//	public final static String db2User = "ETLUSR";
 //	public final static String db2Password = "1qaz@WSX";
 	
 //	public final static String db2Url = 
@@ -40,9 +40,9 @@ public class ETL_Profile {
 //			"currentFunctionPath=" + db2SPSchema + ";";
 	
 //	public final static String db2Url = 
-//			"jdbc:db2://172.18.6.151:50000/ETLDB001:currentschema=ADMINISTRATOR;currentFunctionPath=ADMINISTRATOR;";
-	public final static String db2User = "Administrator";
-	public final static String db2Password = "9ol.)P:?";
+//			"jdbc:db2://172.18.6.151:50000/ETLDB001:currentschema=ETLUSR;currentFunctionPath=ETLUSR;";
+	public final static String db2User = "ETLUSR";
+	public final static String db2Password = "1qazXSW@";
 	
 //	public final static String db2Url = 
 ////			ETL_Tool_DES.decrypt("58fcd8a8d6fa0357b43596ad4e09a6c44ab4f8a6772d57e1925e"
@@ -164,6 +164,7 @@ public class ETL_Profile {
 	public final static int ETL_E_CALENDAR = 11;
 	public final static int ETL_DM_ACCTMAPPING_LOAD = 40;
 	public final static int ETL_DM_BRANCHMAPPING_LOAD = 12;
+	public final static int ETL_DM_IDMAPPING_LOAD = 40;
 
 	// 讀檔筆數域值
 	public final static int ETL_E_Stage = 10000;

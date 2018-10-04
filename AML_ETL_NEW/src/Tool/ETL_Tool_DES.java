@@ -98,11 +98,18 @@ public class ETL_Tool_DES {
 //			System.out.println(decrypt("decbb834578d510a250db3230e803611"));
 //			System.out.println(decrypt("de6964a598384312250db3230e803611"));
 			
-			System.out.println(encrypt("jdbc:db2://172.18.6.152:50000/ETLDB002:currentschema=ADMINISTRATOR;currentFunctionPath=ADMINISTRATOR;"));
+//			System.out.println(encrypt("jdbc:db2://172.18.6.152:50000/ETLDB002:currentschema=ADMINISTRATOR;currentFunctionPath=ADMINISTRATOR;"));
 //			System.out.println(encrypt("C:/ETL/L_Script/run/"));
 			
 //			System.out.println(decrypt("8ba6ba4bf4a45186b96fcc12bd01445545021e9d1fe4431eae94124ee542db4e160dd19b9ddd3c9a"));
-//			System.out.println(decrypt("8ba6ba4bf4a45186a3850695ef0ab3b2c085821dab27407e0ff582606aa619f62581dc1e31994710893522724e52e2a9160dd19b9ddd3c9a"));
+//			System.out.println(decrypt("6366786fdfbad193"));
+			
+//			System.out.println(encrypt("5325Etlpassw0rd"));
+			
+			System.out.println(encrypt("ETLUSR"));
+			System.out.println(encrypt("1qazXSW@"));
+			System.out.println(decrypt("f36ddb910a7dafa79b9ec0da15a003be"));
+			System.out.println(decrypt("75389c596a389dcfc53af1a4a004b34f"));
 			
 		} catch (Exception e) {
 			e.printStackTrace();

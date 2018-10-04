@@ -54,7 +54,7 @@ public class ETL_E_PARTY extends Extract {
 			{ "c-4", "PARTY_CHANGE_CODE" }, // 異動代號
 			{ "c-4-2", "PARTY_CHANGE_CODE_2" }, // 異動代號
 			{ "c-5", "PARTY_MY_CUSTOMER_FLAG" }, // 是否為本行客戶
-			{ "c-6", "COMM_DOMAIN_ID" }, // 歸屬本/分會代號
+			{ "c-6", "COMM_BRANCH_CODE" }, // 歸屬本/分會代號
 			{ "c-7", "PARTY_ENTITY_TYPE" }, // 顧客類型
 			{ "c-8", "PARTY_ENTITY_SUB_TYPE" }, // 客戶子類型
 			{ "c-13", "COMM_NATIONALITY_CODE" }, // 國籍
@@ -1547,7 +1547,7 @@ public class ETL_E_PARTY extends Extract {
 		}
 
 		InsertAdapter insertAdapter = new InsertAdapter();
-		insertAdapter.setSql("{call ADMINISTRATOR.SP_INSERT_PARTY_TEMP(?,?)}"); // 呼叫PARTY_PHONE寫入DB2 - SP
+		insertAdapter.setSql("{call SP_INSERT_PARTY_TEMP(?,?)}"); // 呼叫PARTY_PHONE寫入DB2 - SP
 		insertAdapter.setCreateArrayTypesName("A_PARTY"); // DB2 array type - PARTY
 		insertAdapter.setCreateStructTypeName("T_PARTY"); // DB2 type - PARTY
 		insertAdapter.setTypeArrayLength(ETL_Profile.Data_Stage); // 設定上限寫入參數
@@ -1582,14 +1582,14 @@ public class ETL_E_PARTY extends Extract {
 
 		// 讀取測試資料，並運行程式
 		ETL_E_PARTY one = new ETL_E_PARTY();
-		String filePath = "C:\\Users\\10404003\\Desktop\\農金\\2018\\180309";
+		String filePath = "C:\\Users\\10404003\\Desktop\\農金\\2018\\180910";
 		String fileTypeName = "PARTY";
 
 		long time1, time2;
 		time1 = System.currentTimeMillis();
 
-		one.read_Party_File(filePath, fileTypeName, "E8888888", "605",
-				new SimpleDateFormat("yyyyMMdd").parse("20180227"), "999", "ETL_E_PARTY");
+		one.read_Party_File(filePath, fileTypeName, "TES00001", "018",
+				new SimpleDateFormat("yyyyMMdd").parse("20180823"), "003", "ETL_E_PARTY");
 
 		time2 = System.currentTimeMillis();
 		System.out.println("花了：" + (time2 - time1) + "豪秒");

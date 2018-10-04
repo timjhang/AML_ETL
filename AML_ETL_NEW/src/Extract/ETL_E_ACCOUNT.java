@@ -55,6 +55,7 @@ public class ETL_E_ACCOUNT extends Extract {
 			{ "change_code", "ACCOUNT_CHANGE_CODE" }, // 異動代號
 			{ "account_type_code", "ACCOUNT_ACCOUNT_TYPE_CODE" }, // 帳戶類別
 			{ "account_type_code018", "ACCOUNT_ACCOUNT_TYPE_CODE018" }, // 帳戶類別
+			{ "branch_code", "COMM_BRANCH_CODE"},//帳戶行
 			{ "property_code", "ACCOUNT_PROPERTY_CODE" }, // 連結服務
 			{ "currency_code", "COMM_CURRENCY_CODE" }, // 幣別
 			{ "status_code", "ACCOUNT_STATUS_CODE" }, // 帳戶狀態
@@ -422,7 +423,7 @@ public class ETL_E_ACCOUNT extends Extract {
 								data.setError_mark("Y");
 								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 										String.valueOf(rowCount), "帳戶行", "空值"));
-							} else if (!checkMaps.get("domain_id").containsKey(branch_code.trim())) {
+							} else if (!checkMaps.get("branch_code").containsKey(branch_code.trim())) {
 								data.setError_mark("Y");
 								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 										String.valueOf(rowCount), "帳戶行", "非預期:" + branch_code));
