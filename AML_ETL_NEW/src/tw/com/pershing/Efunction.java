@@ -14,6 +14,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import Bean.ETL_Bean_LogData;
 import Extract.ETL_E_ACCOUNT;
 import Extract.ETL_E_CALENDAR;
 import Extract.ETL_E_COLLATERAL;
@@ -33,6 +34,7 @@ import Extract.ETL_E_Wrong_File;
 import Extract.Extract;
 import Profile.ETL_Profile;
 import Tool.ETL_Tool_StringX;
+import Verification.ETL_V_Verification;
 import tw.com.pershing.databean.ETLresponse;
 
 @Path("/Efunction")
@@ -231,6 +233,14 @@ public class Efunction {
 			}
 			
 			System.out.println("線程池已經關閉");
+			
+			// 資料驗證E程式
+			ETL_Bean_LogData logData = new ETL_Bean_LogData();
+			logData.setRECORD_DATE(exc_record_date);
+			logData.setBATCH_NO(batch_no);
+			logData.setCENTRAL_NO(exc_central_no);
+			logData.setUPLOAD_NO(upload_no);
+			ETL_V_Verification.callVerificationFunctionByE(logData);
 			
 			// 執行成功
 			response.setMsg("SUCCESS");

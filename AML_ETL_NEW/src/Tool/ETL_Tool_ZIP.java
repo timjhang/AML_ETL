@@ -99,6 +99,7 @@ public class ETL_Tool_ZIP {
             e.printStackTrace();
         } finally {
             try {
+            	// 使用完畢關閉變數
                 closeFileHandlers(is, os);
             } catch (IOException e) {
 //                e.printStackTrace();

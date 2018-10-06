@@ -29,7 +29,6 @@ import Transform.ETL_T_LOAN_MASTER_LOAD;
 import Transform.ETL_T_PARTY_ACCOUNT_REL;
 import Transform.ETL_T_PARTY_ADDRESS;
 import Transform.ETL_T_PARTY_EMAIL;
-import Transform.ETL_T_PARTY_NATIONALITY;
 import Transform.ETL_T_PARTY_PARTY_REL;
 import Transform.ETL_T_PARTY_PHONE;
 import Transform.ETL_T_PARTY;
@@ -37,6 +36,7 @@ import Transform.ETL_T_SERVICE_LOAD;
 import Transform.ETL_T_TRANSACTION_LOAD;
 import Transform.ETL_T_TRANSFER_LOAD;
 import Transform.Transform;
+import Verification.ETL_V_Verification;
 import tw.com.pershing.databean.ETLresponse;
 
 @Path("/Tfunction")
@@ -269,6 +269,9 @@ public class Tfunction {
 			}
 			
 			System.out.println("線程池已經關閉");
+			
+			// 資料驗證T程式
+			ETL_V_Verification.callVerificationFunctionByT(logData);
 			
 			// 執行成功
 			response.setMsg("SUCCESS");
