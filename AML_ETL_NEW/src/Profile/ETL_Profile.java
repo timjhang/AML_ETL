@@ -165,6 +165,10 @@ public class ETL_Profile {
 	public final static int ETL_DM_ACCTMAPPING_LOAD = 40;
 	public final static int ETL_DM_BRANCHMAPPING_LOAD = 12;
 	public final static int ETL_DM_IDMAPPING_LOAD = 40;
+	public final static int ETL_E_AGENT = 85;
+	public final static int ETL_E_SCUSTBOX = 30;
+	public final static int ETL_E_SCUSTBOXOPEN =379;
+	public final static int ETL_E_SPARTY = 180;
 
 	// 讀檔筆數域值
 	public final static int ETL_E_Stage = 10000;
