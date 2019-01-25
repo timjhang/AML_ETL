@@ -26,7 +26,7 @@ import Tool.ETL_Tool_StringX;
 public class ETL_E_COLLATERAL extends Extract {
 
 	public ETL_E_COLLATERAL() {
-		
+
 	}
 
 	public ETL_E_COLLATERAL(String filePath, String fileTypeName, String batch_no, String exc_central_no,
@@ -41,9 +41,9 @@ public class ETL_E_COLLATERAL extends Extract {
 					this.exc_record_date, this.upload_no, this.program_no);
 		} catch (Exception e) {
 			e.printStackTrace();
-		} 
+		}
 	}
-	
+
 	// 進階檢核參數
 	// private boolean advancedCheck = ETL_Profile.AdvancedCheck;
 
@@ -63,51 +63,38 @@ public class ETL_E_COLLATERAL extends Extract {
 
 	// list data筆數
 	private int dataCount = 0;
-	
-	// insert errorLog fail Count  // TODO V6_2
+
+	// insert errorLog fail Count
 	private int oneFileInsertErrorCount = 0;
 
 	// Data儲存List
 	private List<ETL_Bean_COLLATERAL_Data> dataList = new ArrayList<ETL_Bean_COLLATERAL_Data>();
 
-	// class生成時, 取得所有檢核用子map, 置入母map內
-//	{
-//		try {
-//
-//			checkMaps = new ETL_Q_ColumnCheckCodes().getCheckMaps(checkMapArray);
-//
-//		} catch (Exception ex) {
-//			checkMaps = null;
-//			System.out.println("ETL_E_COLLATERAL 抓取checkMaps資料有誤!");
-//			ex.printStackTrace();
-//		}
-//	};
-
-	// 讀取檔案
-	// 根據(1)代號 (2)年月日yyyyMMdd, 開啟讀檔路徑中符合檔案
-	// 回傳boolean 成功(true)/失敗(false)
-	// filePath 讀檔路徑
-	// fileTypeName 讀檔業務別
-	// batch_no 批次編號
-	// exc_central_no 批次執行_報送單位
-	// exc_record_date 批次執行_檔案日期
-	// upload_no 上傳批號
-	// program_no 程式代號
+	/**
+	 * 讀取檔案 : 根據 讀檔業務別, 開啟讀檔路徑中符合檔案
+	 * 
+	 * @param filePath 讀檔路徑
+	 * @param fileTypeName 讀檔業務別
+	 * @param batch_no 批次編號
+	 * @param exc_central_no 批次執行_報送單位
+	 * @param exc_record_date 批次執行_檔案日期
+	 * @param upload_no 上傳批號
+	 * @param program_no 程式代號
+	 * @throws Exception
+	 */
 	public void read_Collateral_File(String filePath, String fileTypeName, String batch_no, String exc_central_no,
 			Date exc_record_date, String upload_no, String program_no) throws Exception {
-		
-		// TODO  V6_2 start
+
 		// 取得所有檢核用子map, 置入母map內
 		try {
 
 			checkMaps = new ETL_Q_ColumnCheckCodes().getCheckMaps(exc_record_date, exc_central_no, checkMapArray);
 		} catch (Exception ex) {
 			checkMaps = null;
-			System.out.println("ETL_E_COLLATERAL 抓取checkMaps資料有誤!"); // TODO  V6_2
+			System.out.println("ETL_E_COLLATERAL 抓取checkMaps資料有誤!");
 			ex.printStackTrace();
 		}
-		// TODO  V6_2 end
-		
+
 		System.out.println("#######Extrace - ETL_E_COLLATERAL - Start");
 
 		try {
@@ -148,18 +135,14 @@ public class ETL_E_COLLATERAL extends Extract {
 				// 取得檔案
 				File parseFile = fileList.get(i);
 
-				// TODO V5 START
 				ETL_Tool_FileByteUtil fileByteUtil = new ETL_Tool_FileByteUtil(parseFile.getAbsolutePath(),
-						ETL_E_COLLATERAL.class);// TODO
-				// TODO V5 END
+						ETL_E_COLLATERAL.class);
 
 				// 檔名
 				String fileName = parseFile.getName();
-				// TODO V5 START
 				// 讀檔檔名英文字轉大寫比較
 				if (!ETL_Tool_FormatCheck.isEmpty(fileName))
 					fileName = fileName.toUpperCase();
-				// TODO V5 END
 				Date parseStartDate = new Date(); // 開始執行時間
 				System.out.println("解析檔案： " + fileName + " Start " + parseStartDate);
 
@@ -207,53 +190,40 @@ public class ETL_E_COLLATERAL extends Extract {
 				int rowCount = 1; // 從1開始
 				// 成功計數
 				int successCount = 0;
+				// 警示計數(預設值)
+				int warningCount = 0;
 				// 失敗計數
 				int failureCount = 0;
-				// TODO V5 START
-				// 尾錄總數
-				// int iTotalCount = 0;
+				// error_log data
+				ETL_Bean_ErrorLog_Data errorLog_Data;
 
 				// 紀錄是否第一次
 				boolean isFirstTime = false;
-				// TODO V5 END
 
 				try {
 					// 開始前ETL_FILE_Log寫入DB
 					ETL_P_Log.write_ETL_FILE_Log(pfn.getBatch_no(), pfn.getCentral_No(), exc_record_date,
-							pfn.getFile_Type(), pfn.getFile_Name(), upload_no, "E", parseStartDate, null, 0, 0, 0,
+							pfn.getFile_Type(), pfn.getFile_Name(), upload_no, "E", parseStartDate, null, 0, 0, 0, 0,
 							pfn.getFileName());
 
 					// 嚴重錯誤訊息變數(讀檔)
 					String fileFmtErrMsg = "";
 
-					String lineStr = ""; // 行字串暫存區
-
 					// ETL_字串處理Queue
 					ETL_Tool_StringQueue strQueue = new ETL_Tool_StringQueue(exc_central_no);
 					// ETL_Error Log寫入輔助工具
 					ETL_P_ErrorLog_Writer errWriter = new ETL_P_ErrorLog_Writer();
-					// TODO V5 START
-					// 讀檔並將結果注入ETL_字串處理Queue
-					// strQueue.setBytesList(ETL_Tool_FileByteUtil.getFilesBytes(parseFile.getAbsolutePath()));
-					// 首、明細、尾錄, 基本組成檢查
-					//boolean isFileFormatOK = ETL_Tool_FileFormat.checkBytesList(strQueue.getBytesList());
-					// TODO V6 START
-					//int isFileOK = fileByteUtil.isFileOK(parseFile.getAbsolutePath());
+
 					int isFileOK = fileByteUtil.isFileOK(pfn, upload_no, parseFile.getAbsolutePath());
-					// TODO V6 END
+
 					boolean isFileFormatOK = isFileOK != 0 ? true : false;
-					// TODO V5 END
-					// TODO V6_3 start
-					fileFmtErrMsg = isFileFormatOK ? "":"區別碼錯誤";
-					// TODO V6_3 END
+					fileFmtErrMsg = isFileFormatOK ? "" : "區別碼錯誤";
 
 					// 首錄檢查
 					if (isFileFormatOK) {
 
-						// TODO V5 START
 						// 注入指定範圍筆數資料到QUEUE
 						strQueue.setBytesList(fileByteUtil.getFilesBytes());
-						// TODO V5 END
 
 						// strQueue工具注入第一筆資料
 						strQueue.setTargetString();
@@ -265,18 +235,15 @@ public class ETL_E_COLLATERAL extends Extract {
 									String.valueOf(rowCount), "行數bytes檢查", fileFmtErrMsg));
 						}
 
-						// 區別瑪檢核(1)
+						// 區別瑪檢核(1)，嚴重錯誤時,不進行迴圈並記錄錯誤訊息
 						String typeCode = strQueue.popBytesString(1);
-						if (!"1".equals(typeCode)) { // 首錄區別碼檢查, 嚴重錯誤,
-														// 不進行迴圈並記錄錯誤訊息
+						if (!"1".equals(typeCode)) {
 							fileFmtErrMsg = "首錄區別碼有誤:" + typeCode;
 							errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 									String.valueOf(rowCount), "區別碼", fileFmtErrMsg));
 						}
 
-						/*
-						 * 報送單位檢核(7) 報送單位一致性檢查,嚴重錯誤,不進行迴圈並記錄錯誤訊息
-						 */
+						// 報送單位檢核(7) 報送單位一致性檢查,嚴重錯誤,不進行迴圈並記錄錯誤訊息
 						String central_no = strQueue.popBytesString(7);
 
 						if (!central_no.equals(pfn.getCentral_No())) {
@@ -302,30 +269,24 @@ public class ETL_E_COLLATERAL extends Extract {
 						}
 
 						// 保留欄檢核(187)
-						String reserve_field = strQueue.popBytesString(187);
+						strQueue.popBytesString(187);
 
 						rowCount++; // 處理行數 + 1
 					}
 
-					// TODO V5 START
 					// 實際處理明細錄筆數
 					int grandTotal = 0;
-					// TODO V5 END
 
-					// TODO V5 START
 					// 明細錄檢查- 逐行讀取檔案
-					if (isFileFormatOK && "".equals(fileFmtErrMsg)) { // 沒有嚴重錯誤時進行 TODO
+					if (isFileFormatOK && "".equals(fileFmtErrMsg)) { // 沒有嚴重錯誤時進行
 						if (rowCount == 2)
 							isFirstTime = true;
-						//System.out.println("資料總筆數:" + isFileOK);
-						// while (strQueue.setTargetString() < strQueue.getByteListSize()) {
-						//以實際處理明細錄筆數為依據，只運行明細錄次數
+
+						// 以實際處理明細錄筆數為依據，只運行明細錄次數
 						while (grandTotal < (isFileOK - 2)) {
 
 							strQueue.setTargetString();
 
-							// TODO V5 END
-							
 							// 生成一個Data
 							ETL_Bean_COLLATERAL_Data data = new ETL_Bean_COLLATERAL_Data(pfn);
 							data.setRow_count(rowCount);
@@ -343,16 +304,19 @@ public class ETL_E_COLLATERAL extends Extract {
 								// 明細錄資料bytes不正確, 跳過此行後續檢核, 執行下一行
 								failureCount++;
 								rowCount++;
-								grandTotal++; //TODO V6
+								grandTotal++;
 								continue;
 							}
+
+							// 寫入ErrorList
+							List<ETL_Bean_ErrorLog_Data> errorList = new ArrayList<ETL_Bean_ErrorLog_Data>();
 
 							// 區別碼檢核 R X(01)*
 							String typeCode = strQueue.popBytesString(1);
 							if (!"2".equals(typeCode)) {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "區別碼", "非預期:" + typeCode));
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", String.valueOf(rowCount),
+										"區別碼", "非預期:" + typeCode));
 							}
 
 							// 本會代號檢核 R X(07)*
@@ -361,12 +325,12 @@ public class ETL_E_COLLATERAL extends Extract {
 
 							if (ETL_Tool_FormatCheck.isEmpty(domain_id)) {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "本會代號", "空值"));
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", String.valueOf(rowCount),
+										"本會代號", "空值"));
 							} else if (!checkMaps.get("domain_id").containsKey(domain_id.trim())) {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "本會代號", "非預期:" + domain_id));
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", String.valueOf(rowCount),
+										"本會代號", "非預期:" + domain_id));
 							}
 
 							// 擔保品編號 R X(20)*
@@ -375,8 +339,8 @@ public class ETL_E_COLLATERAL extends Extract {
 
 							if (ETL_Tool_FormatCheck.isEmpty(collateral_id)) {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "擔保品編號", "空值"));
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", String.valueOf(rowCount),
+										"擔保品編號", "空值"));
 							}
 
 							// 異動代號檢核 R X(01)*
@@ -384,13 +348,21 @@ public class ETL_E_COLLATERAL extends Extract {
 							data.setChange_code(change_code);
 
 							if (ETL_Tool_FormatCheck.isEmpty(change_code)) {
-								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "異動代號", "空值"));
+								// 預設值 - U
+								data.setChange_code("U");
+								transDataErrorMark(data, "W");
+								errorLog_Data = new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+										String.valueOf(rowCount), "異動代號", "空值");
+								errorLog_Data.setDEFAULT_VALUE("U");
+								errorList.add(errorLog_Data);
 							} else if (!checkMaps.get("change_code").containsKey(change_code.trim())) {
-								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "異動代號", "非預期:" + change_code));
+								// 預設值 - U
+								data.setChange_code("U");
+								transDataErrorMark(data, "W");
+								errorLog_Data = new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+										String.valueOf(rowCount), "異動代號", "非預期:" + change_code);
+								errorLog_Data.setDEFAULT_VALUE("U");
+								errorList.add(errorLog_Data);
 							}
 
 							// 批覆書編號/申請書編號 R X(20)*
@@ -399,8 +371,8 @@ public class ETL_E_COLLATERAL extends Extract {
 
 							if (ETL_Tool_FormatCheck.isEmpty(loan_master_number)) {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "批覆書編號/申請書編號", "空值"));
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", String.valueOf(rowCount),
+										"批覆書編號/申請書編號", "空值"));
 							}
 
 							// 額度編號 R X(20)*
@@ -409,8 +381,8 @@ public class ETL_E_COLLATERAL extends Extract {
 
 							if (ETL_Tool_FormatCheck.isEmpty(loan_detail_number)) {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "額度編號", "空值"));
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", String.valueOf(rowCount),
+										"額度編號", "空值"));
 							}
 
 							// 擔保品類別 R X(02)*
@@ -419,12 +391,12 @@ public class ETL_E_COLLATERAL extends Extract {
 
 							if (ETL_Tool_FormatCheck.isEmpty(collateral_type)) {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "擔保品類別", "空值"));
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", String.valueOf(rowCount),
+										"擔保品類別", "空值"));
 							} else if (!checkMaps.get("collateral_type").containsKey(collateral_type.trim())) {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "擔保品類別", "非預期:" + collateral_type));
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", String.valueOf(rowCount),
+										"擔保品類別", "非預期:" + collateral_type));
 							}
 
 							// 鑑價金額 R 9(12)V99*
@@ -433,12 +405,12 @@ public class ETL_E_COLLATERAL extends Extract {
 
 							if (ETL_Tool_FormatCheck.isEmpty(collateral_value)) {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "鑑價金額 ", "空值"));
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", String.valueOf(rowCount),
+										"鑑價金額 ", "空值"));
 							} else if (!ETL_Tool_FormatCheck.checkNum(collateral_value)) {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "鑑價金額 ", "格式錯誤:" + collateral_value));
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", String.valueOf(rowCount),
+										"鑑價金額 ", "格式錯誤:" + collateral_value));
 							}
 
 							// 擔保金額 R 9(12)V99*
@@ -447,25 +419,17 @@ public class ETL_E_COLLATERAL extends Extract {
 
 							if (ETL_Tool_FormatCheck.isEmpty(guarantee_amount)) {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "擔保金額 ", "空值"));
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", String.valueOf(rowCount),
+										"擔保金額 ", "空值"));
 							} else if (!ETL_Tool_FormatCheck.checkNum(guarantee_amount)) {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "擔保金額 ", "格式錯誤:" + guarantee_amount));
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", String.valueOf(rowCount),
+										"擔保金額 ", "格式錯誤:" + guarantee_amount));
 							}
 
 							// 擔保品描述 O X(40)
 							String collateral_desc = strQueue.popBytesString(40);
 							data.setCollateral_desc(collateral_desc);
-
-							// if (advancedCheck &&
-							// ETL_Tool_FormatCheck.isEmpty(collateral_desc)) {
-							// data.setError_mark("Y");
-							// errWriter.addErrLog(new
-							// ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-							// String.valueOf(rowCount), "擔保品描述 ", "空值"));
-							// }
 
 							// 所有權人統編 R X(11)*
 							String relation_id = strQueue.popBytesString(11);
@@ -473,34 +437,34 @@ public class ETL_E_COLLATERAL extends Extract {
 
 							if (ETL_Tool_FormatCheck.isEmpty(relation_id)) {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "所有權人統編", "空值"));
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", String.valueOf(rowCount),
+										"所有權人統編", "空值"));
 							}
 
 							// 所有權人姓名 O X(40)
 							String relation_name = strQueue.popBytesDiffString(40);
 							data.setRelation_name(relation_name);
 
-							// if (advancedCheck &&
-							// ETL_Tool_FormatCheck.isEmpty(relation_name)) {
-							// data.setError_mark("Y");
-							// errWriter.addErrLog(new
-							// ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-							// String.valueOf(rowCount), "所有權人姓名 ", "空值"));
-							// }
-
 							// 與主債務人關係 R X(02)*
 							String relation_type_code = strQueue.popBytesString(2);
 							data.setRelation_type_code(relation_type_code);
 
 							if (ETL_Tool_FormatCheck.isEmpty(relation_type_code)) {
-								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "與主債務人關係", "空值"));
+								// 預設值 - NA
+								data.setRelation_type_code("NA");
+								transDataErrorMark(data, "W");
+								errorLog_Data = new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+										String.valueOf(rowCount), "與主債務人關係", "空值");
+								errorLog_Data.setDEFAULT_VALUE("NA");
+								errorList.add(errorLog_Data);
 							} else if (!checkMaps.get("relation_type_code").containsKey(relation_type_code.trim())) {
-								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "與主債務人關係", "非預期:" + relation_type_code));
+								// 預設值 - NA
+								data.setRelation_type_code("NA");
+								transDataErrorMark(data, "W");
+								errorLog_Data = new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+										String.valueOf(rowCount), "與主債務人關係", "非預期:" + relation_type_code);
+								errorLog_Data.setDEFAULT_VALUE("NA");
+								errorList.add(errorLog_Data);
 							}
 
 							// 客戶(主債務人)統編 R X(11)*
@@ -509,8 +473,36 @@ public class ETL_E_COLLATERAL extends Extract {
 
 							if (ETL_Tool_FormatCheck.isEmpty(party_number)) {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "客戶(主債務人)統編", "空值"));
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", String.valueOf(rowCount),
+										"客戶(主債務人)統編", "空值"));
+							}
+							
+							// ErrorList統一寫入PK值, 再寫入Error Log
+							String tempSRC_Data = "";
+							for (int j = 0; j < errorList.size(); j++) {
+								// 寫入pk值
+								errorList.get(j).setDOMAIN_ID(domain_id);
+								errorList.get(j).setPARTY_NUMBER(party_number);
+								errorList.get(j).setLOAN_MASTER_NUMBER(loan_master_number);
+								errorList.get(j).setLOAN_DETAIL_NUMBER(loan_detail_number);
+								errorList.get(j).setCOLLATERAL_ID(collateral_id);
+								
+								// 第一筆時，將轉換String預存
+								if (j == 0) {
+									// 寫入整行String - 有難字轉換
+									tempSRC_Data = strQueue.getAllDiffString();
+								}
+								// 寫入整行String
+								errorList.get(j).setSRC_DATA(tempSRC_Data);
+								
+								// 寫入一個Error
+								errWriter.addErrLog(errorList.get(j));
+								
+								// 最後一筆時將預存List清空
+								if (j == (errorList.size() - 1)) {
+									// 將List清空
+									errorList.clear();
+								}
 							}
 
 							// data list 加入一個檔案
@@ -518,15 +510,18 @@ public class ETL_E_COLLATERAL extends Extract {
 
 							if ("Y".equals(data.getError_mark())) {
 								failureCount++;
+							} else if ("W".equals(data.getError_mark())) {
+								// 若參數為"W" 計入warning Count
+								warningCount++;
+								// 將Error_Mark改為"", 視為正常繼續ETL作業
+								transDataErrorMark(data, "");
 							} else {
 								successCount++;
 							}
-							// TODO V5 START
 							// 實際處理明細錄筆數累加
 							grandTotal += 1;
 
-//							System.out.println("實際處理列數:" + rowCount + " / 實際處理明細錄筆數:" + grandTotal + " / 目前處理資料第"
-//									+ strQueue.getBytesListIndex() + "筆");
+							// System.out.println("實際處理列數:" + rowCount + " / 實際處理明細錄筆數:" + grandTotal + " / 目前處理資料第" + strQueue.getBytesListIndex() + "筆");
 
 							rowCount++; // 處理行數 + 1
 
@@ -540,45 +535,43 @@ public class ETL_E_COLLATERAL extends Extract {
 
 							) {
 
-//								System.out.println("=======================================");
-//
-//								if (isFirstTime)
-//									System.out.println("第一次處理，資料來源須扣除首錄筆數");
-								//記錄非初次
+								// System.out.println("=======================================");
+								//
+								// if (isFirstTime)
+								// System.out.println("第一次處理，資料來源須扣除首錄筆數");
+								// 記錄非初次
 								isFirstTime = false;
 
-//								System.out
-//										.println("累積處理資料已達到限制處理筆數範圍:" + ETL_Profile.ETL_E_Stage + "筆，再度切割資料來源進入QUEUE");
+								// System.out
+								// .println("累積處理資料已達到限制處理筆數範圍:" +
+								// ETL_Profile.ETL_E_Stage +
+								// "筆，再度切割資料來源進入QUEUE");
 
 								// 注入指定範圍筆數資料到QUEUE
 								strQueue.setBytesList(fileByteUtil.getFilesBytes());
 								// 初始化使用筆數
 								strQueue.setBytesListIndex(0);
 
-//								System.out.println("初始化提取處理資料，目前處理資料為:" + strQueue.getBytesListIndex());
-//								System.out.println("=======================================");
+								// System.out.println("初始化提取處理資料，目前處理資料為:" +
+								// strQueue.getBytesListIndex());
+								// System.out.println("=======================================");
 							}
-							// TODO V5 END
 						}
 					}
 
 					// Collateral_Data寫入DB
 					insert_Collateral_Datas();
-					
-					// TODO V6_2 start
+
 					// 修正筆數, 考慮寫入資料庫時寫入失敗的狀況
 					successCount = successCount - this.oneFileInsertErrorCount;
 					failureCount = failureCount + this.oneFileInsertErrorCount;
 					// 單一檔案寫入DB error個數重計
 					this.oneFileInsertErrorCount = 0;
-					// TODO V6_2 end
 
 					// 尾錄檢查
 					if (isFileFormatOK && "".equals(fileFmtErrMsg)) { // 沒有嚴重錯誤時進行
-						
-						//TODO V5 START
+
 						strQueue.setTargetString();
-						//TODO V5 END
 
 						// 整行bytes數檢核 (1 + 7 + 8 + 7 + 180 = 203)
 						if (strQueue.getTotalByteLength() != 203) {
@@ -595,9 +588,7 @@ public class ETL_E_COLLATERAL extends Extract {
 									String.valueOf(rowCount), "區別碼", fileFmtErrMsg));
 						}
 
-						/*
-						 * 報送單位檢核(7) 報送單位一致性檢查,嚴重錯誤,不進行迴圈並記錄錯誤訊息
-						 */
+						// 報送單位檢核(7) 報送單位一致性檢查,嚴重錯誤,不進行迴圈並記錄錯誤訊息
 						String central_no = strQueue.popBytesString(7);
 						if (!central_no.equals(pfn.getCentral_No())) {
 							fileFmtErrMsg = "尾錄報送單位代碼與檔名不符:" + central_no;
@@ -623,7 +614,6 @@ public class ETL_E_COLLATERAL extends Extract {
 
 						// 總筆數檢核(7)
 						String totalCount = strQueue.popBytesString(7);
-						// iTotalCount = ETL_Tool_StringX.toInt(totalCount); TODO V5
 
 						if (!ETL_Tool_FormatCheck.checkNum(totalCount)) {
 							fileFmtErrMsg = "尾錄總筆數格式錯誤:" + totalCount;
@@ -636,11 +626,11 @@ public class ETL_E_COLLATERAL extends Extract {
 						}
 
 						// 保留欄檢核(180)
-						String reserve_field = strQueue.popBytesString(180);
+						strQueue.popBytesString(180);
 
 						// 程式統計檢核
-						if ((rowCount - 2) != (successCount + failureCount)) {
-							fileFmtErrMsg = "總筆數 <> 成功比數 + 失敗筆數";
+						if ((rowCount - 2) != (successCount + warningCount + failureCount)) {
+							fileFmtErrMsg = "總筆數 <> 成功比數   + 警示筆數 + 失敗筆數";
 							errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 									String.valueOf(rowCount), "程式檢核", fileFmtErrMsg));
 						}
@@ -654,18 +644,6 @@ public class ETL_E_COLLATERAL extends Extract {
 					// 執行結果說明
 					String file_exe_result_description;
 
-					//TODO V6 START
-//					if (!isFileFormatOK) {
-//						file_exe_result = "S";
-//						file_exe_result_description = "解析檔案出現嚴重錯誤-區別碼錯誤";
-//						processErrMsg = processErrMsg + pfn.getFileName() + "解析檔案出現嚴重錯誤-區別碼錯誤\n";
-//
-//						// 寫入Error Log
-//						errWriter.addErrLog(
-//								new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", "0", "區別碼", "解析檔案出現嚴重錯誤-區別碼錯誤"));
-//
-//					} else
-					//TODO V6 END
 					if (!"".equals(fileFmtErrMsg)) {
 						file_exe_result = "S";
 						file_exe_result_description = "解析檔案出現嚴重錯誤";
@@ -682,25 +660,21 @@ public class ETL_E_COLLATERAL extends Extract {
 					errWriter.insert_Error_Log();
 
 					// 處理後更新ETL_FILE_Log
-//					ETL_P_Log.update_End_ETL_FILE_Log(pfn.getBatch_no(), pfn.getCentral_No(), exc_record_date,
-//							pfn.getFile_Type(), pfn.getFile_Name(), upload_no, "E", parseEndDate, iTotalCount,
-//							successCount, failureCount, file_exe_result, file_exe_result_description);
 					ETL_P_Log.update_End_ETL_FILE_Log(pfn.getBatch_no(), pfn.getCentral_No(), exc_record_date,
 							pfn.getFile_Type(), pfn.getFile_Name(), upload_no, "E", parseEndDate,
-							(successCount + failureCount), // TODO V5
-							successCount, failureCount, file_exe_result, file_exe_result_description);
+							(successCount + warningCount + failureCount), successCount, warningCount, failureCount, file_exe_result, file_exe_result_description);
 				} catch (Exception ex) {
-					// 發生錯誤時, 資料List & 計數 reset // TODO V6_2
-					this.dataCount = 0; 
+					// 發生錯誤時, 資料List & 計數 reset
+					this.dataCount = 0;
 					this.dataList.clear();
-					
+
 					// 寫入Error_Log
 					ETL_P_Log.write_Error_Log(batch_no, exc_central_no, exc_record_date, null, fileTypeName, upload_no,
 							"E", "0", "ETL_E_COLLATERAL程式處理", ex.getMessage(), null);
 
 					// 執行錯誤更新ETL_FILE_Log
 					ETL_P_Log.update_End_ETL_FILE_Log(pfn.getBatch_no(), pfn.getCentral_No(), exc_record_date,
-							pfn.getFile_Type(), pfn.getFile_Name(), upload_no, "E", new Date(), 0, 0, 0, "S",
+							pfn.getFile_Type(), pfn.getFile_Name(), upload_no, "E", new Date(), 0, 0, 0, 0, "S",
 							ex.getMessage());
 					processErrMsg = processErrMsg + ex.getMessage() + "\n";
 
@@ -709,24 +683,21 @@ public class ETL_E_COLLATERAL extends Extract {
 				// 累加處理錯誤筆數
 				detail_ErrorCount = detail_ErrorCount + failureCount;
 			}
-			
-			// TODO V6_2 Start
+
 			// 過濾軌跡資料
 			try {
-				
-				ETL_P_EData_Filter.E_Datas_Filter("filter_COLLATERAL_TEMP_Temp", // TODO v6_2
-						batch_no, exc_central_no, exc_record_date, upload_no, program_no);
-				
+
+				ETL_P_EData_Filter.E_Datas_Filter("filter_COLLATERAL_TEMP_Temp", batch_no, exc_central_no, exc_record_date, upload_no, program_no);
+
 			} catch (Exception ex) {
 				// 寫入Error_Log
-				ETL_P_Log.write_Error_Log(batch_no, exc_central_no, exc_record_date, null, fileTypeName, upload_no,
-						"E", "0", "ETL_E_COLLATERAL程式處理", ex.getMessage(), null); // TODO v6_2
+				ETL_P_Log.write_Error_Log(batch_no, exc_central_no, exc_record_date, null, fileTypeName, upload_no, "E",
+						"0", "ETL_E_COLLATERAL程式處理", ex.getMessage(), null);
 				processErrMsg = processErrMsg + ex.getMessage() + "\n";
-				
+
 				ex.printStackTrace();
 			}
-			// TODO V6_2 End
-			
+
 			// 執行結果
 			String detail_exe_result;
 			// 執行結果說明
@@ -789,19 +760,19 @@ public class ETL_E_COLLATERAL extends Extract {
 
 		InsertAdapter insertAdapter = new InsertAdapter();
 		// 呼叫COLLATERAL寫入DB2 - SP
-		insertAdapter.setSql("{call SP_INSERT_COLLATERAL_TEMP(?,?)}"); // TODO V6_2
+		insertAdapter.setSql("{call SP_INSERT_COLLATERAL_TEMP(?,?)}"); 
 		// DB2 type - COLLATERAL
 		insertAdapter.setCreateStructTypeName("T_COLLATERAL");
 		// DB2 array type - COLLATERAL
 		insertAdapter.setCreateArrayTypesName("A_COLLATERAL");
 		insertAdapter.setTypeArrayLength(ETL_Profile.ErrorLog_Stage); // 設定上限寫入參數
 
-		Boolean isSuccess = ETL_P_Data_Writer.insertByDefineArrayListObject2(this.dataList, insertAdapter); // TODO V6_2
-		int errorCount = insertAdapter.getErrorCount(); // TODO V6_2
-		
+		Boolean isSuccess = ETL_P_Data_Writer.insertByDefineArrayListObject2(this.dataList, insertAdapter);
+		int errorCount = insertAdapter.getErrorCount();
+
 		if (isSuccess) {
-			System.out.println("insert_Collateral_Datas 寫入 " + this.dataList.size() + "(-" + errorCount + ")筆資料!"); // TODO V6_2
-			this.oneFileInsertErrorCount = this.oneFileInsertErrorCount + errorCount; // TODO V6_2
+			System.out.println("insert_Collateral_Datas 寫入 " + this.dataList.size() + "(-" + errorCount + ")筆資料!"); 
+			this.oneFileInsertErrorCount = this.oneFileInsertErrorCount + errorCount; 
 		} else {
 			throw new Exception("insert_Collateral_Datas 發生錯誤");
 		}
@@ -809,6 +780,26 @@ public class ETL_E_COLLATERAL extends Extract {
 		// 寫入後將計數與資料List清空
 		this.dataCount = 0;
 		this.dataList.clear();
+	}
+
+	// 轉換Error_Mark
+	private static void transDataErrorMark(ETL_Bean_COLLATERAL_Data data, String trans_Error_Mark) {
+		if (data != null) {
+			// 欲將Error_Mark改成W
+			if ("W".equals(trans_Error_Mark)) {
+				// 已經是"Y"的不進行變更, 反之更新為"W"
+				if ("Y".equals(data.getError_mark())) {
+					return;
+				} else {
+					data.setError_mark(trans_Error_Mark);
+					return;
+				}
+			} else {
+				// 其餘直接轉換
+				data.setError_mark(trans_Error_Mark);
+				return;
+			}
+		}
 	}
 
 	public static void main(String[] argv) throws Exception {

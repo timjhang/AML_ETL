@@ -17,6 +17,19 @@ public class ETL_Bean_ErrorLog_Data {
 	private String FIELD_NAME; // 欄位中文名稱
 	private String ERROR_DESCRIPTION; // 錯誤描述
 	private String SRC_FILE; // 來源檔案(檔案全名)
+	// Error_Log錯誤回覆機制用
+	private String ERROR_TYPE = "Error"; // 錯誤類別(預設Error)
+	private String DOMAIN_ID; // 本會代號
+	private String PARTY_NUMBER; // 客戶統編
+	private String TRANSACTION_ID; // 交易序號
+	private String ACCOUNT_ID; // 帳號
+	private String LOAN_MASTER_NUMBER; // 批覆書編號
+	private String LOAN_DETAIL_NUMBER; // 額度編號
+	private String COLLATERAL_ID; // 擔保品編號
+	private String DEFAULT_VALUE; // 欄位預設值
+	private java.util.Date MODIFY_DATE; // 資料更正日期
+	private java.sql.Timestamp CHECK_EXCUTE_DATETIME; // 執行日期時間
+	private String SRC_DATA; // 原始資料
 	
 	
 	/**
@@ -86,6 +99,11 @@ public class ETL_Bean_ErrorLog_Data {
 		this.ERROR_DESCRIPTION = ERROR_DESCRIPTION;
 		this.SRC_FILE = pfn.getFileName();
 	}
+	
+//	// Error型態改為Warning
+//	public void setWarning() {
+//		this.ERROR_TYPE = "Warning";
+//	}
 
 	public String getBATCH_NO() {
 		return BATCH_NO;
@@ -173,6 +191,104 @@ public class ETL_Bean_ErrorLog_Data {
 
 	public void setSRC_FILE(String sRC_FILE) {
 		SRC_FILE = sRC_FILE;
+	}
+
+	public String getERROR_TYPE() {
+		return ERROR_TYPE;
+	}
+
+	public void setERROR_TYPE(String eRROR_TYPE) {
+		ERROR_TYPE = eRROR_TYPE;
+	}
+
+	public String getDOMAIN_ID() {
+		return DOMAIN_ID;
+	}
+
+	public void setDOMAIN_ID(String dOMAIN_ID) {
+		DOMAIN_ID = dOMAIN_ID;
+	}
+
+	public String getPARTY_NUMBER() {
+		return PARTY_NUMBER;
+	}
+
+	public void setPARTY_NUMBER(String pARTY_NUMBER) {
+		PARTY_NUMBER = pARTY_NUMBER;
+	}
+
+	public String getTRANSACTION_ID() {
+		return TRANSACTION_ID;
+	}
+
+	public void setTRANSACTION_ID(String tRANSACTION_ID) {
+		TRANSACTION_ID = tRANSACTION_ID;
+	}
+
+	public String getACCOUNT_ID() {
+		return ACCOUNT_ID;
+	}
+
+	public void setACCOUNT_ID(String aCCOUNT_ID) {
+		ACCOUNT_ID = aCCOUNT_ID;
+	}
+
+	public String getLOAN_MASTER_NUMBER() {
+		return LOAN_MASTER_NUMBER;
+	}
+
+	public void setLOAN_MASTER_NUMBER(String lOAN_MASTER_NUMBER) {
+		LOAN_MASTER_NUMBER = lOAN_MASTER_NUMBER;
+	}
+
+	public String getLOAN_DETAIL_NUMBER() {
+		return LOAN_DETAIL_NUMBER;
+	}
+
+	public void setLOAN_DETAIL_NUMBER(String lOAN_DETAIL_NUMBER) {
+		LOAN_DETAIL_NUMBER = lOAN_DETAIL_NUMBER;
+	}
+
+	public String getCOLLATERAL_ID() {
+		return COLLATERAL_ID;
+	}
+
+	public void setCOLLATERAL_ID(String cOLLATERAL_ID) {
+		COLLATERAL_ID = cOLLATERAL_ID;
+	}
+
+	public String getDEFAULT_VALUE() {
+		return DEFAULT_VALUE;
+	}
+
+	public void setDEFAULT_VALUE(String dEFAULT_VALUE) {
+		// 寫入預設值, 預設為Warning
+		this.ERROR_TYPE = "Warning";
+		DEFAULT_VALUE = dEFAULT_VALUE;
+	}
+
+	public java.util.Date getMODIFY_DATE() {
+		return MODIFY_DATE;
+	}
+
+	public void setMODIFY_DATE(java.util.Date mODIFY_DATE) {
+		MODIFY_DATE = mODIFY_DATE;
+	}
+
+	public java.sql.Timestamp getCHECK_EXCUTE_DATETIME() {
+		return CHECK_EXCUTE_DATETIME;
+	}
+
+	public void setCHECK_EXCUTE_DATETIME(java.sql.Timestamp cHECK_EXCUTE_DATETIME) {
+		CHECK_EXCUTE_DATETIME = cHECK_EXCUTE_DATETIME;
+	}
+
+	public String getSRC_DATA() {
+		return SRC_DATA;
+	}
+
+	public void setSRC_DATA(String sRC_DATA) {
+		SRC_DATA = sRC_DATA;
 	}
 		
 }

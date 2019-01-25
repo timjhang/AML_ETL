@@ -237,6 +237,31 @@ public class ETL_Tool_StringQueue {
 		}
 	}
 	
+	// 取出整段文字
+	public String getAllString() throws Exception {
+		// 結果array
+		byte[] resultBytes = new byte[this.totalByteLength];
+		
+		// 複製所需長度array至resultBytes上
+		System.arraycopy(targetStringBytes, 0, resultBytes, 0, this.totalByteLength);
+		
+		return new String(resultBytes, format);
+	}
+	
+	// 取出整段文字
+	public String getAllDiffString() throws Exception {
+		// 結果array
+		byte[] resultBytes = new byte[this.totalByteLength];
+		
+		// 複製所需長度array至resultBytes上
+		System.arraycopy(targetStringBytes, 0, resultBytes, 0, this.totalByteLength);
+		if (difficultWordMaps != null) {
+			return ETL_Tool_Big5_To_UTF8.format(resultBytes, difficultWordMaps,specialBig5Map);
+		} else {
+			return new String(resultBytes, format);
+		} 
+	}
+	
 	// test
 	public static void main(String[] argv) {
 		try {

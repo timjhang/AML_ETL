@@ -83,7 +83,7 @@ public class ETL_E_Wrong_File  extends Extract {
 
 			// 開始前ETL_FILE_Log寫入DB
 			ETL_P_Log.write_ETL_FILE_Log(batch_no, exc_central_no, exc_record_date, "", "", upload_no, "E", new Date(),
-					null, 0, 0, 0, "");
+					null, 0, 0, 0,0, "");
 
 			// 讀取路徑, 先檢查相關權限是否ok
 			File file = new File(filePath);
@@ -220,7 +220,7 @@ public class ETL_E_Wrong_File  extends Extract {
 			// 處理後更新ETL_FILE_Log
 			ETL_P_Log.update_End_ETL_FILE_Log(batch_no, exc_central_no, exc_record_date,
 					"", "", upload_no, "E", new Date() , 0,
-					0, 0, file_exe_result, processErrMsg);
+					0, 0,0, file_exe_result, processErrMsg);
 
 		} catch (Exception ex) {
 			try {
@@ -229,7 +229,7 @@ public class ETL_E_Wrong_File  extends Extract {
 
 				// 處理後更新ETL_FILE_Log
 				ETL_P_Log.update_End_ETL_FILE_Log(batch_no, exc_central_no, exc_record_date, "", "", upload_no, "E",
-						new Date(), 0, 0, 0, "S", ex.getMessage());
+						new Date(), 0, 0, 0, 0, "S", ex.getMessage());
 			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

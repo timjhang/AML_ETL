@@ -64,7 +64,7 @@ public class ETL_P_Log {
 	 */
 	public static void write_ETL_FILE_Log(String BATCH_NO, String CENTRAL_NO, java.util.Date RECORD_DATE, String FILE_TYPE, String FILE_NAME,
 			String UPLOAD_NO, String STEP_TYPE, java.util.Date START_DATETIME, java.util.Date END_DATETIME,
-			int TOTAL_CNT, int SUCCESS_CNT, int FAILED_CNT, String SRC_FILE)
+			int TOTAL_CNT, int SUCCESS_CNT, int WARNING_CNT, int FAILED_CNT, String SRC_FILE)
 			throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
 
 		String sql_statement = 
@@ -80,11 +80,12 @@ public class ETL_P_Log {
 					" END_DATETIME, " +
 					" TOTAL_CNT, " +
 					" SUCCESS_CNT, " +
+					" WARNING_CNT, " +
 					" FAILED_CNT, " +
 					" EXE_RESULT, " +
 					" EXE_RESULT_DESCRIPTION, " +
 					" SRC_FILE " +
-				") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+				") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 		Connection con = ConnectionHelper.getDB2ConnGAML("DB");
 		PreparedStatement pstmt = con.prepareStatement(sql_statement);
@@ -100,10 +101,11 @@ public class ETL_P_Log {
 		pstmt.setTimestamp(9, (END_DATETIME==null)?null:(new Timestamp(END_DATETIME.getTime())));
 		pstmt.setInt(10, TOTAL_CNT);
 		pstmt.setInt(11, SUCCESS_CNT);
-		pstmt.setInt(12, FAILED_CNT);
-		pstmt.setString(13, "");
+		pstmt.setInt(12, WARNING_CNT);
+		pstmt.setInt(13, FAILED_CNT);
 		pstmt.setString(14, "");
-		pstmt.setString(15, SRC_FILE);
+		pstmt.setString(15, "");
+		pstmt.setString(16, SRC_FILE);
 
 		pstmt.executeUpdate();
 
@@ -138,7 +140,7 @@ public class ETL_P_Log {
 	 */
 	public static void update_End_ETL_FILE_Log(String BATCH_NO, String CENTRAL_NO, java.util.Date RECORD_DATE, String FILE_TYPE, String FILE_NAME,
 			String UPLOAD_NO, String STEP_TYPE, java.util.Date END_DATETIME,
-			int TOTAL_CNT, int SUCCESS_CNT, int FAILED_CNT,
+			int TOTAL_CNT, int SUCCESS_CNT, int WARNING_CNT, int FAILED_CNT,
 			String EXE_RESULT, String EXE_RESULT_DESCRIPTION)
 			throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
 
@@ -147,6 +149,7 @@ public class ETL_P_Log {
 					" END_DATETIME = ?, " +
 					" TOTAL_CNT = ?, " +
 					" SUCCESS_CNT = ?, " +
+					" WARNING_CNT = ?, " +
 					" FAILED_CNT = ?, " +
 					" EXE_RESULT = ?, " +
 					" EXE_RESULT_DESCRIPTION = ? " +
@@ -165,17 +168,17 @@ public class ETL_P_Log {
 		pstmt.setTimestamp(1, new Timestamp(END_DATETIME.getTime()));
 		pstmt.setInt(2, TOTAL_CNT);
 		pstmt.setInt(3, SUCCESS_CNT);
-		pstmt.setInt(4, FAILED_CNT);
-		pstmt.setString(5, EXE_RESULT);
-		pstmt.setString(6, EXE_RESULT_DESCRIPTION);
-		pstmt.setString(7, BATCH_NO);
-		pstmt.setString(8, CENTRAL_NO);
-		pstmt.setDate(9, new Date(RECORD_DATE.getTime()));
-		pstmt.setString(10, FILE_TYPE);
-		pstmt.setString(11, FILE_NAME);
-		pstmt.setString(12, UPLOAD_NO);
-		pstmt.setString(13, STEP_TYPE);
-		
+		pstmt.setInt(4, WARNING_CNT);
+		pstmt.setInt(5, FAILED_CNT);
+		pstmt.setString(6, EXE_RESULT);
+		pstmt.setString(7, EXE_RESULT_DESCRIPTION);
+		pstmt.setString(8, BATCH_NO);
+		pstmt.setString(9, CENTRAL_NO);
+		pstmt.setDate(10, new Date(RECORD_DATE.getTime()));
+		pstmt.setString(11, FILE_TYPE);
+		pstmt.setString(12, FILE_NAME);
+		pstmt.setString(13, UPLOAD_NO);
+		pstmt.setString(14, STEP_TYPE);
 
 		pstmt.executeUpdate();
 
@@ -210,7 +213,7 @@ public class ETL_P_Log {
 	 */
 	public static void update_End_ETL_FILE_Log_NO_FILE_TYPE(String BATCH_NO, String CENTRAL_NO, java.util.Date RECORD_DATE, String FILE_NAME,
 			String UPLOAD_NO, String STEP_TYPE, java.util.Date END_DATETIME,
-			int TOTAL_CNT, int SUCCESS_CNT, int FAILED_CNT,
+			int TOTAL_CNT, int SUCCESS_CNT, int WARNING_CNT, int FAILED_CNT,
 			String EXE_RESULT, String EXE_RESULT_DESCRIPTION)
 			throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
 
@@ -219,6 +222,7 @@ public class ETL_P_Log {
 					" END_DATETIME = ?, " +
 					" TOTAL_CNT = ?, " +
 					" SUCCESS_CNT = ?, " +
+					" WARNING_CNT = ?, " +
 					" FAILED_CNT = ?, " +
 					" EXE_RESULT = ?, " +
 					" EXE_RESULT_DESCRIPTION = ? " +
@@ -236,15 +240,16 @@ public class ETL_P_Log {
 		pstmt.setTimestamp(1, new Timestamp(END_DATETIME.getTime()));
 		pstmt.setInt(2, TOTAL_CNT);
 		pstmt.setInt(3, SUCCESS_CNT);
-		pstmt.setInt(4, FAILED_CNT);
-		pstmt.setString(5, EXE_RESULT);
-		pstmt.setString(6, EXE_RESULT_DESCRIPTION);
-		pstmt.setString(7, BATCH_NO);
-		pstmt.setString(8, CENTRAL_NO);
-		pstmt.setDate(9, new Date(RECORD_DATE.getTime()));
-		pstmt.setString(10, FILE_NAME);
-		pstmt.setString(11, UPLOAD_NO);
-		pstmt.setString(12, STEP_TYPE);
+		pstmt.setInt(4, WARNING_CNT);
+		pstmt.setInt(5, FAILED_CNT);
+		pstmt.setString(6, EXE_RESULT);
+		pstmt.setString(7, EXE_RESULT_DESCRIPTION);
+		pstmt.setString(8, BATCH_NO);
+		pstmt.setString(9, CENTRAL_NO);
+		pstmt.setDate(10, new Date(RECORD_DATE.getTime()));
+		pstmt.setString(11, FILE_NAME);
+		pstmt.setString(12, UPLOAD_NO);
+		pstmt.setString(13, STEP_TYPE);
 		
 
 		pstmt.executeUpdate();

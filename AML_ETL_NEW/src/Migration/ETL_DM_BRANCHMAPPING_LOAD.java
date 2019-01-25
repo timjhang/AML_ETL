@@ -77,11 +77,11 @@ public class ETL_DM_BRANCHMAPPING_LOAD {
 			
 			// 開始前ETL_FILE_Log寫入DB
 			ETL_P_Log.write_ETL_FILE_Log(batch_no, exc_central_no, targetDate, "", "BRANCHMAPPING",
-					upload_no, "E", new Date(), null, 0, 0, 0, "BRANCHMAPPING");
+					upload_no, "E", new Date(), null, 0, 0, 0, 0, "BRANCHMAPPING");
 
 			// 執行錯誤更新ETL_FILE_Log
 			ETL_P_Log.update_End_ETL_FILE_Log(batch_no, exc_central_no, targetDate, "",
-					"BRANCHMAPPING", upload_no, "E", new Date(), 0, 0, 0, "S", "無該日期之檔案");
+					"BRANCHMAPPING", upload_no, "E", new Date(), 0, 0, 0, 0, "S", "無該日期之檔案");
 
 			System.out.println("無該日期之檔案！");
 		}
@@ -119,7 +119,7 @@ public class ETL_DM_BRANCHMAPPING_LOAD {
 
 				// 開始前ETL_FILE_Log寫入DB
 				ETL_P_Log.write_ETL_FILE_Log(pfn.getBatch_no(), exc_central_no, targetDate, "", pfn.getFile_name(),
-						upload_no, "E", parseStartDate, null, 0, 0, 0, pfn.getFileName());
+						upload_no, "E", parseStartDate, null, 0, 0, 0, 0, pfn.getFileName());
 
 				// 嚴重錯誤訊息變數(讀檔)
 				String fileFmtErrMsg = "";
@@ -430,7 +430,7 @@ public class ETL_DM_BRANCHMAPPING_LOAD {
 
 				ETL_P_Log.update_End_ETL_FILE_Log(pfn.getBatch_no(), exc_central_no, pfn.getRecord_date(), "",
 						pfn.getFile_name(), upload_no, "E", parseEndDate, (successCount + failureCount),
-						successCount, failureCount, file_exe_result, file_exe_result_description);
+						successCount, 0, failureCount, file_exe_result, file_exe_result_description);
 
 			} catch (Exception ex) {
 				// 發生錯誤時, 資料List & 計數 reset
@@ -443,7 +443,7 @@ public class ETL_DM_BRANCHMAPPING_LOAD {
 
 				// 執行錯誤更新ETL_FILE_Log
 				ETL_P_Log.update_End_ETL_FILE_Log(pfn.getBatch_no(), exc_central_no, pfn.getRecord_date(), "",
-						pfn.getFile_name(), upload_no, "E", new Date(), 0, 0, 0, "S", ex.getMessage());
+						pfn.getFile_name(), upload_no, "E", new Date(), 0, 0, 0, 0, "S", ex.getMessage());
 				processErrMsg = processErrMsg + ex.getMessage() + "\n";
 
 				ex.printStackTrace();

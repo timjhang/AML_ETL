@@ -785,12 +785,12 @@ public class ETL_C_GET_UPLOAD_FILE {
 					
 				} else {
 					
-					if (files[i].delete()) {
-						System.out.println("檔案 " + fileName + " 不符合rename規則，成功刪除！");
-					} else {
-						System.out.println("檔案 " + fileName + " 不符合rename規則，刪除失敗！");
-						isSuccess = false;
-					}
+//					if (files[i].delete()) {
+//						System.out.println("檔案 " + fileName + " 不符合rename規則，成功刪除！");
+//					} else {
+//						System.out.println("檔案 " + fileName + " 不符合rename規則，刪除失敗！");
+//						isSuccess = false;
+//					}
 				}
 				
 //				// 若檔名<=3個字, 則將檔案刪除
@@ -841,6 +841,20 @@ public class ETL_C_GET_UPLOAD_FILE {
 	}
 
 	public static void main(String[] args) {
+		
+		System.out.println("Start");
+		
+		boolean result;
+		String[] temp = new String[1];
+		result = download_SFTP_MigrationFiles("600", temp);
+
+		if (result) {
+			System.out.println("結果成功!");
+		} else {
+			System.out.println("結果失敗!");
+		}
+		
+		System.out.println("End");
 		
 //		String[] downloadFileInfo = new String[1];
 //		download_SFTP_Files("600", downloadFileInfo);

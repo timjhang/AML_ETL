@@ -9,21 +9,18 @@ import java.util.Map;
 import Bean.ETL_Bean_DM_ACCTMAPPING_LOAD_Data;
 import Bean.ETL_Bean_ErrorLog_Data;
 import Bean.ETL_Bean_Response;
-import Bean.ETL_Bean_TRANSACTION_Data;
 import DB.ETL_P_DMData_Writer;
 import DB.ETL_P_Data_Writer;
 import DB.ETL_P_ErrorLog_Writer;
 import DB.ETL_P_Log;
 import DB.ETL_Q_ColumnCheckCodes;
 import DB.InsertAdapter;
-import Extract.ETL_E_TRANSACTION;
 import Profile.ETL_Profile;
 import Tool.ETL_Tool_DM_ParseFileName;
 import Tool.ETL_Tool_FileByteUtil;
 import Tool.ETL_Tool_FileReader;
 import Tool.ETL_Tool_FormatCheck;
 import Tool.ETL_Tool_StringQueue;
-import Tool.ETL_Tool_StringX;
 
 public class ETL_DM_ACCTMAPPING_LOAD {
 
@@ -89,11 +86,11 @@ public class ETL_DM_ACCTMAPPING_LOAD {
 
 			// 開始前ETL_FILE_Log寫入DB
 			ETL_P_Log.write_ETL_FILE_Log(batch_no, exc_central_no, targetDate, "", "ACCTMAPPING",
-					upload_no, "E", new Date(), null, 0, 0, 0, "ACCTMAPPING");
+					upload_no, "E", new Date(), null, 0, 0, 0, 0,"ACCTMAPPING");
 
 			// 執行錯誤更新ETL_FILE_Log
 			ETL_P_Log.update_End_ETL_FILE_Log(batch_no, exc_central_no,targetDate, "",
-					"ACCTMAPPING", upload_no, "E", new Date(), 0, 0, 0, "S", "無該日期之檔案");
+					"ACCTMAPPING", upload_no, "E", new Date(), 0, 0, 0,0, "S", "無該日期之檔案");
 
 			System.out.println("無該日期之檔案！");
 
@@ -149,7 +146,7 @@ public class ETL_DM_ACCTMAPPING_LOAD {
 
 				// 開始前ETL_FILE_Log寫入DB
 				ETL_P_Log.write_ETL_FILE_Log(pfn.getBatch_no(), exc_central_no, targetDate, "", pfn.getFile_name(),
-						upload_no, "E", parseStartDate, null, 0, 0, 0, pfn.getFileName());
+						upload_no, "E", parseStartDate, null, 0, 0, 0,0, pfn.getFileName());
 
 				// 嚴重錯誤訊息變數(讀檔)
 				String fileFmtErrMsg = "";
@@ -510,7 +507,7 @@ public class ETL_DM_ACCTMAPPING_LOAD {
 
 				ETL_P_Log.update_End_ETL_FILE_Log(pfn.getBatch_no(), exc_central_no, pfn.getRecord_date(), "",
 						pfn.getFile_name(), upload_no, "E", parseEndDate, (successCount + failureCount), // V5
-						successCount, failureCount, file_exe_result, file_exe_result_description);
+						successCount, 0,failureCount, file_exe_result, file_exe_result_description);
 			} catch (Exception ex) {
 				// 發生錯誤時, 資料List & 計數 reset
 				this.dataCount = 0;
@@ -522,7 +519,7 @@ public class ETL_DM_ACCTMAPPING_LOAD {
 
 				// 執行錯誤更新ETL_FILE_Log
 				ETL_P_Log.update_End_ETL_FILE_Log(pfn.getBatch_no(), exc_central_no, pfn.getRecord_date(), "",
-						pfn.getFile_name(), upload_no, "E", new Date(), 0, 0, 0, "S", ex.getMessage());
+						pfn.getFile_name(), upload_no, "E", new Date(), 0, 0, 0, 0,"S", ex.getMessage());
 				processErrMsg = processErrMsg + ex.getMessage() + "\n";
 
 				ex.printStackTrace();

@@ -96,7 +96,19 @@ public class ETL_Tool_FileByteUtil {
 				break;
 			case "ETL_DM_IDMAPPING_LOAD":
 				this.buffer_size = ETL_Profile.ETL_DM_IDMAPPING_LOAD;
-				break;	
+				break;
+			case "ETL_E_AGENT": 
+				this.buffer_size = ETL_Profile.ETL_E_AGENT; 
+				break; 
+			case "ETL_E_SCUSTBOX": 
+				this.buffer_size = ETL_Profile.ETL_E_SCUSTBOX;
+				break; 
+			case "ETL_E_SCUSTBOXOPEN": 
+				this.buffer_size = ETL_Profile.ETL_E_SCUSTBOXOPEN; 
+				break; 
+			case "ETL_E_SPARTY": 
+				this.buffer_size = ETL_Profile.ETL_E_SPARTY; 
+				break;
 		}
 	}
 

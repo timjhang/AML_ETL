@@ -17,6 +17,7 @@ import javax.ws.rs.core.MediaType;
 import Bean.ETL_Bean_LogData;
 import Tool.ETL_Tool_StringX;
 import Transform.ETL_T_ACCOUNT_PROPERTY;
+import Transform.ETL_T_AGENT;
 import Transform.ETL_T_ACCOUNT;
 import Transform.ETL_T_BALANCE;
 import Transform.ETL_T_CALENDAR_LOAD;
@@ -31,6 +32,7 @@ import Transform.ETL_T_PARTY_ADDRESS;
 import Transform.ETL_T_PARTY_EMAIL;
 import Transform.ETL_T_PARTY_PARTY_REL;
 import Transform.ETL_T_PARTY_PHONE;
+import Transform.ETL_T_SCUSTBOXOPEN;
 import Transform.ETL_T_PARTY;
 import Transform.ETL_T_SERVICE_LOAD;
 import Transform.ETL_T_TRANSACTION_LOAD;
@@ -253,6 +255,14 @@ public class Tfunction {
 			logData2 = logData.clone();
 			logData2.setPROGRAM_NO("ETL_T_TRANSFER_LOAD");
 			transforms.add(new ETL_T_TRANSFER_LOAD(logData2));
+			
+			logData2 = logData.clone();
+			logData2.setPROGRAM_NO("ETL_T_AGEN");
+			transforms.add(new ETL_T_AGENT(logData2));
+			
+			logData2 = logData.clone();
+			logData2.setPROGRAM_NO("ETL_T_SCUSTBOXOPEN");
+			transforms.add(new ETL_T_SCUSTBOXOPEN(logData2));
 			
 			
 			stepStr = "T多線程";

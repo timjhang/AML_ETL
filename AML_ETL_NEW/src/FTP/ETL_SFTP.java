@@ -133,9 +133,19 @@ public class ETL_SFTP {
 			// Create remote file object
 			FileObject remoteFile = manager.resolveFile(
 					createConnectionString(hostName, port, username, password, remoteFilePath), createDefaultOptions());
-
-			// Copy local file to sftp server
-			remoteFile.copyFrom(localFile, Selectors.SELECT_SELF);
+			
+			if (remoteFile.exists() && remoteFile.isFile()) {
+				if (remoteFile.delete()) {
+					// Copy local file to sftp server
+					remoteFile.copyFrom(localFile, Selectors.SELECT_SELF);
+				} else {
+					System.out.println("File upload failure");
+					return false;
+				}
+			} else {
+				// Copy local file to sftp server
+				remoteFile.copyFrom(localFile, Selectors.SELECT_SELF);
+			}
 
 			System.out.println("File upload success");
 			
@@ -291,6 +301,37 @@ public class ETL_SFTP {
 			e.printStackTrace();
 			// 失敗回傳false
 			return false;
+		} finally {
+			manager.close();
+		}
+	}
+	
+	// 產生SFTP路徑資料夾
+	public static boolean createFolder(String hostName, String port, String username, String password, String folderPath) {
+		StandardFileSystemManager manager = new StandardFileSystemManager();
+
+		try {
+			manager.init();
+
+			// Create remote object
+			FileObject remoteFile = manager.resolveFile(
+					createConnectionString(hostName, port, username, password, folderPath), createDefaultOptions());
+
+			if (remoteFile.exists() && remoteFile.isFolder()) {
+				System.out.println("路徑資料夾:" + folderPath + "已存在！  不須產生");
+				return true;
+			} else {
+				remoteFile.createFolder();
+				if (remoteFile.exists()) {
+					System.out.println("路徑資料夾:" + folderPath + "已產生！");
+					return true;
+				} else {
+					System.out.println("路徑資料夾:" + folderPath + "產生失敗！");
+					return false;
+				}
+			}
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		} finally {
 			manager.close();
 		}

@@ -106,7 +106,7 @@ public class ETL_E_PARTY_PARTY_REL extends Extract {
 			ETL_P_Log.write_ETL_Detail_Log(batch_no, exc_central_no, exc_record_date, upload_no, "E", program_no, "S",
 					"", "", new Date(), null);
 
-			// 處理Party_Phone錯誤計數
+			// 處理PARTY_PARTY_REL錯誤計數
 			int detail_ErrorCount = 0;
 
 			// 程式執行錯誤訊息
@@ -181,8 +181,13 @@ public class ETL_E_PARTY_PARTY_REL extends Extract {
 				int rowCount = 1; // 從1開始
 				// 成功計數
 				int successCount = 0;
+				// 警示計數(預設值)
+				int warningCount = 0;
 				// 失敗計數
 				int failureCount = 0;
+				// error_log data // TODO V11
+				ETL_Bean_ErrorLog_Data errorLog_Data;
+				
 				// 紀錄是否第一次
 				boolean isFirstTime = false;
 
@@ -190,7 +195,7 @@ public class ETL_E_PARTY_PARTY_REL extends Extract {
 
 					// 開始前ETL_FILE_Log寫入DB
 					ETL_P_Log.write_ETL_FILE_Log(pfn.getBatch_no(), pfn.getCentral_No(), exc_record_date,
-							pfn.getFile_Type(), pfn.getFile_Name(), upload_no, "E", parseStartDate, null, 0, 0, 0,
+							pfn.getFile_Type(), pfn.getFile_Name(), upload_no, "E", parseStartDate, null, 0, 0, 0, 0,
 							pfn.getFileName());
 
 					// 嚴重錯誤訊息變數
@@ -296,12 +301,15 @@ public class ETL_E_PARTY_PARTY_REL extends Extract {
 								grandTotal++;
 								continue;
 							}
+							
+							// TODO V11  寫入ErrorList
+							List<ETL_Bean_ErrorLog_Data> errorList = new ArrayList<ETL_Bean_ErrorLog_Data>();
 
 							// 區別碼檢核 c-1*
 							String typeCode = strQueue.popBytesString(1);
 							if (!"2".equals(typeCode)) {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 										String.valueOf(rowCount), "區別碼", "非預期:" + typeCode));
 							}
 
@@ -310,11 +318,11 @@ public class ETL_E_PARTY_PARTY_REL extends Extract {
 							data.setDomain_id(domain_id);
 							if (ETL_Tool_FormatCheck.isEmpty(domain_id)) {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 										String.valueOf(rowCount), "本會代號", "空值"));
 							} else if (advancedCheck && !checkMaps.get("c-2").containsKey(domain_id)) {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 										String.valueOf(rowCount), "本會代號", "非預期:" + domain_id));
 							}
 
@@ -323,7 +331,7 @@ public class ETL_E_PARTY_PARTY_REL extends Extract {
 							data.setParty_number(party_number);
 							if (ETL_Tool_FormatCheck.isEmpty(party_number)) {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 										String.valueOf(rowCount), "本會(行)客戶統編", "空值"));
 							}
 
@@ -331,26 +339,50 @@ public class ETL_E_PARTY_PARTY_REL extends Extract {
 							String change_code = strQueue.popBytesString(1);
 							data.setChange_code(change_code);
 							if (ETL_Tool_FormatCheck.isEmpty(change_code)) {
-								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "異動代號", "空值"));
+//								data.setError_mark("Y");
+								// 預設值 - 更新
+								data.setChange_code("U");
+								transDataErrorMark(data, "W");
+								
+								errorLog_Data = new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+										String.valueOf(rowCount), "異動代號", "空值");
+								errorLog_Data.setDEFAULT_VALUE("U");
+								errorList.add(errorLog_Data);
 							} else if (advancedCheck && !checkMaps.get("c-4").containsKey(change_code)) {
-								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "異動代號", "非預期:" + change_code));
+//								data.setError_mark("Y");
+								// 預設值 - 更新
+								data.setChange_code("U");
+								transDataErrorMark(data, "W");
+								
+								errorLog_Data = new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+										String.valueOf(rowCount), "異動代號", "非預期:" + change_code);
+								errorLog_Data.setDEFAULT_VALUE("U");
+								errorList.add(errorLog_Data);
 							}
 
 							// 顧客關係種類 c-*5(2)
 							String relation_type_code = strQueue.popBytesString(2);
 							data.setRelation_type_code(relation_type_code);
 							if (ETL_Tool_FormatCheck.isEmpty(relation_type_code)) {
-								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "顧客關係種類", "空值"));
+//								data.setError_mark("Y");
+								// 預設值 - O
+								data.setRelation_type_code("O");
+								transDataErrorMark(data, "W");
+								
+								errorLog_Data = new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+										String.valueOf(rowCount), "顧客關係種類", "空值");
+								errorLog_Data.setDEFAULT_VALUE("O");
+								errorList.add(errorLog_Data);
 							} else if (advancedCheck && !checkMaps.get("c-5").containsKey(relation_type_code.trim())) {
-								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "顧客關係種類", "非預期:" + relation_type_code));
+//								data.setError_mark("Y");
+								// 預設值 - O
+								data.setRelation_type_code("O");
+								transDataErrorMark(data, "W");
+								
+								errorLog_Data = new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+										String.valueOf(rowCount), "顧客關係種類", "非預期:" + relation_type_code);
+								errorLog_Data.setDEFAULT_VALUE("O");
+								errorList.add(errorLog_Data);
 							}
 
 							// 顧客關係描述 c-6(40)
@@ -362,7 +394,7 @@ public class ETL_E_PARTY_PARTY_REL extends Extract {
 							data.setParty_key_2(party_key_2);
 							if (ETL_Tool_FormatCheck.isEmpty(party_key_2)) {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 										String.valueOf(rowCount), "關係人-統編", "空值"));
 							}
 
@@ -379,9 +411,15 @@ public class ETL_E_PARTY_PARTY_REL extends Extract {
 							data.setDate_of_birth(ETL_Tool_StringX.toUtilDate(date_of_birth));
 							if (advancedCheck && !ETL_Tool_FormatCheck.isEmpty(date_of_birth)
 									&& !ETL_Tool_FormatCheck.checkDate(date_of_birth)) {
-								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "關係人-出生年月日", "格式錯誤:" + date_of_birth));
+//								data.setError_mark("Y");
+								// 預設值 - 19000101
+								data.setDate_of_birth(ETL_Tool_StringX.toUtilDate("19000101"));
+								transDataErrorMark(data, "W");
+								
+								errorLog_Data = new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+										String.valueOf(rowCount), "關係人-出生年月日", "格式錯誤:" + date_of_birth);
+								errorLog_Data.setDEFAULT_VALUE("19000101");
+								errorList.add(errorLog_Data);
 							}
 
 							// 關係人-國籍 c-11(2)
@@ -389,16 +427,52 @@ public class ETL_E_PARTY_PARTY_REL extends Extract {
 							data.setNationality_code(nationality_code);
 							if (advancedCheck && !ETL_Tool_FormatCheck.isEmpty(nationality_code)
 									&& !checkMaps.get("c-11").containsKey(nationality_code)) {
-								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
-										String.valueOf(rowCount), "關係人-國籍", "非預期:" + nationality_code));
+//								data.setError_mark("Y");
+								// 預設值 - TW
+								data.setNationality_code("TW");
+								transDataErrorMark(data, "W");
+								
+								errorLog_Data = new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+										String.valueOf(rowCount), "關係人-國籍", "非預期:" + nationality_code);
+								errorLog_Data.setDEFAULT_VALUE("TW");
+								errorList.add(errorLog_Data);
 							}
 
+							// ErrorList統一寫入PK值, 再寫入Error Log
+							String tempSRC_Data = "";
+							for (int j = 0; j < errorList.size(); j++) {
+								// 寫入pk值
+								errorList.get(j).setDOMAIN_ID(domain_id);
+								errorList.get(j).setPARTY_NUMBER(party_number);
+								errorList.get(j).setTRANSACTION_ID(relation_type_code);
+								
+								// 第一筆時，將轉換String預存
+								if (j == 0) {
+									tempSRC_Data = strQueue.getAllDiffString(); // 有難字轉換
+								}
+								// 寫入整行String
+								errorList.get(j).setSRC_DATA(tempSRC_Data);
+								
+								// 寫入一個Error
+								errWriter.addErrLog(errorList.get(j));
+								
+								// 最後一筆時將預存List清空
+								if (j == (errorList.size() - 1)) {
+									// 將List清空
+									errorList.clear();
+								}
+							}
+							
 							// data list 加入一個檔案
 							addData(data);
 
 							if ("Y".equals(data.getError_mark())) {
 								failureCount++;
+							} else if ("W".equals(data.getError_mark())) {
+								// 若參數為"W" 計入warning Count
+								warningCount++;
+								// 將Error_Mark改為"", 視為正常繼續ETL作業
+								transDataErrorMark(data, "");
 							} else {
 								successCount++;
 							}
@@ -500,8 +574,8 @@ public class ETL_E_PARTY_PARTY_REL extends Extract {
 						String keepColumn = strQueue.popBytesString(180);
 
 						// 程式統計檢核
-						if ((rowCount - 2) != (successCount + failureCount)) {
-							fileFmtErrMsg = "總筆數 <> 成功比數 + 失敗筆數";
+						if ((rowCount - 2) != (successCount + warningCount + failureCount)) {
+							fileFmtErrMsg = "總筆數 <> 成功比數 + 警示筆數 + 失敗筆數";
 							errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 									String.valueOf(rowCount), "程式檢核", fileFmtErrMsg));
 						}
@@ -534,8 +608,8 @@ public class ETL_E_PARTY_PARTY_REL extends Extract {
 					// 處理後更新ETL_FILE_Log
 					ETL_P_Log.update_End_ETL_FILE_Log(pfn.getBatch_no(), pfn.getCentral_No(), exc_record_date,
 							pfn.getFile_Type(), pfn.getFile_Name(), upload_no, "E", parseEndDate,
-							(successCount + failureCount),
-							successCount, failureCount, file_exe_result, file_exe_result_description);
+							(successCount + warningCount + failureCount),
+							successCount, warningCount, failureCount, file_exe_result, file_exe_result_description);
 					
 				} catch (Exception ex) {
 					// 發生錯誤時, 資料List & 計數 reset
@@ -548,14 +622,14 @@ public class ETL_E_PARTY_PARTY_REL extends Extract {
 
 					// 執行錯誤更新ETL_FILE_Log
 					ETL_P_Log.update_End_ETL_FILE_Log(pfn.getBatch_no(), pfn.getCentral_No(), exc_record_date,
-							pfn.getFile_Type(), pfn.getFile_Name(), upload_no, "E", new Date(), 0, 0, 0, "S",
+							pfn.getFile_Type(), pfn.getFile_Name(), upload_no, "E", new Date(), 0, 0, 0, 0, "S",
 							ex.getMessage());
 					processErrMsg = processErrMsg + ex.getMessage() + "\n";
 
 					ex.printStackTrace();
 				}
 
-				// 累加PARTY_PHONE處理錯誤筆數
+				// 累加PARTY_PARTY_REL處理錯誤筆數
 				detail_ErrorCount = detail_ErrorCount + failureCount;
 			}
 			
@@ -627,7 +701,7 @@ public class ETL_E_PARTY_PARTY_REL extends Extract {
 		}
 	}
 
-	// 將PARTY_PHONE資料寫入資料庫
+	// 將PARTY_PARTY_REL資料寫入資料庫
 	private void insert_Party_Party_Rel_Datas() throws Exception {
 		if (this.dataList == null || this.dataList.size() == 0) {
 			System.out.println("ETL_E_PARTY_PARTY_REL - insert_Party_Party_Rel_Datas 無寫入任何資料");
@@ -635,9 +709,9 @@ public class ETL_E_PARTY_PARTY_REL extends Extract {
 		}
 
 		InsertAdapter insertAdapter = new InsertAdapter();
-		insertAdapter.setSql("{call SP_INSERT_PARTY_PARTY_REL_TEMP(?,?)}"); // 呼叫PARTY_PHONE寫入DB2 - SP
-		insertAdapter.setCreateArrayTypesName("A_PARTY_PARTY_REL"); // DB2 array type - PARTY_PHONE
-		insertAdapter.setCreateStructTypeName("T_PARTY_PARTY_REL"); // DB2 type - PARTY_PHONE
+		insertAdapter.setSql("{call SP_INSERT_PARTY_PARTY_REL_TEMP(?,?)}"); // 呼叫PARTY_PARTY_REL寫入DB2 - SP
+		insertAdapter.setCreateArrayTypesName("A_PARTY_PARTY_REL"); // DB2 array type - PARTY_PARTY_REL
+		insertAdapter.setCreateStructTypeName("T_PARTY_PARTY_REL"); // DB2 type - PARTY_PARTY_REL
 		insertAdapter.setTypeArrayLength(ETL_Profile.Data_Stage); // 設定上限寫入參數
 
 		Boolean isSuccess = ETL_P_Data_Writer.insertByDefineArrayListObject2(this.dataList, insertAdapter);
@@ -653,6 +727,26 @@ public class ETL_E_PARTY_PARTY_REL extends Extract {
 		// 寫入後將計數與資料List清空
 		this.dataCount = 0;
 		this.dataList.clear();
+	}
+	
+	// 轉換Error_Mark
+	private static void transDataErrorMark(ETL_Bean_PARTY_PARTY_REL_Data data, String trans_Error_Mark) {
+		if (data != null) {
+			// 欲將Error_Mark改成W
+			if ("W".equals(trans_Error_Mark)) {
+				// 已經是"Y"的不進行變更, 反之更新為"W"
+				if ("Y".equals(data.getError_mark())) {
+					return;
+				} else {
+					data.setError_mark(trans_Error_Mark);
+					return;
+				}
+			} else {
+				// 其餘直接轉換
+				data.setError_mark(trans_Error_Mark);
+				return;
+			}
+		}
 	}
 
 	public static void main(String[] argv) throws Exception {

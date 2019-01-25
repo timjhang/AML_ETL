@@ -15,7 +15,9 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import Bean.ETL_Bean_LogData;
+import ErrorFile.ErrorFileDAO;
 import Extract.ETL_E_ACCOUNT;
+import Extract.ETL_E_AGENT;
 import Extract.ETL_E_CALENDAR;
 import Extract.ETL_E_COLLATERAL;
 import Extract.ETL_E_FCX;
@@ -27,12 +29,14 @@ import Extract.ETL_E_PARTY;
 import Extract.ETL_E_PARTY_ADDRESS;
 import Extract.ETL_E_PARTY_PARTY_REL;
 import Extract.ETL_E_PARTY_PHONE;
+import Extract.ETL_E_SCUSTBOX;
+import Extract.ETL_E_SCUSTBOXOPEN;
 import Extract.ETL_E_SERVICE;
+import Extract.ETL_E_SPARTY;
 import Extract.ETL_E_TRANSACTION;
 import Extract.ETL_E_TRANSFER;
 import Extract.ETL_E_Wrong_File;
 import Extract.Extract;
-import Profile.ETL_Profile;
 import Tool.ETL_Tool_StringX;
 import Verification.ETL_V_Verification;
 import tw.com.pershing.databean.ETLresponse;
@@ -215,6 +219,22 @@ public class Efunction {
 			program_no = "ETL_E_" + fileTypeName;
 			extracts.add(new ETL_E_TRANSFER(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no));
 			
+			fileTypeName = "SCUSTBOXOPEN";
+			program_no = "ETL_E_" + fileTypeName;
+			extracts.add(new ETL_E_SCUSTBOXOPEN(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no));
+			
+			fileTypeName = "SCUSTBOX";
+			program_no = "ETL_E_" + fileTypeName;
+			extracts.add(new ETL_E_SCUSTBOX(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no));
+			
+			fileTypeName = "AGENT";
+			program_no = "ETL_E_" + fileTypeName;
+			extracts.add(new ETL_E_AGENT(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no));
+			
+			fileTypeName = "SPARTY";
+			program_no = "ETL_E_" + fileTypeName;
+			extracts.add(new ETL_E_SPARTY(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no));
+			
 			fileTypeName = "Wrong_File";
 			program_no = "ETL_E_" + fileTypeName;
 			extracts.add(new ETL_E_Wrong_File(filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no));
@@ -233,6 +253,9 @@ public class Efunction {
 			}
 			
 			System.out.println("線程池已經關閉");
+			
+			// Error Log 統整計入 ERROR_LOG_DOWNLOAD(錯誤回覆機制)
+			ErrorFileDAO.write_ERROR_LOG_DOWNLOAD();
 			
 			// 資料驗證E程式
 			ETL_Bean_LogData logData = new ETL_Bean_LogData();

@@ -34,11 +34,15 @@ public class ETL_Tool_CastObjUtil {
 				objs[i] = (utilDate == null) ? null : new java.sql.Date(utilDate.getTime());
 			} else if ("java.lang.String".equals(clazz.getName())) {
 				Object obj=clazz.cast(PropertyUtils.getProperty(javaBean, field.getName())); 
-				if (obj!=null) { 
+				if (obj != null && !"SRC_DATA".equals(field.getName())) { 
 					// repalce 全形 trim 空白 
 					String objStr = obj.toString(); 
 					objStr = objStr.replaceAll("　", " "); 
 					objs[i] = objStr.trim(); 
+				} else if (obj != null && "SRC_DATA".equals(field.getName())) {
+					String objStr = obj.toString();
+					objStr = objStr.replaceAll("　", " "); 
+					objs[i] = objStr;
 				} else { 
 					objs[i] = null; 
 				} 

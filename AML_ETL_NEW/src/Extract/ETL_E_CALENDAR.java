@@ -1,6 +1,7 @@
 package Extract;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.Map;
 
 import Bean.ETL_Bean_CALENDAR_TEMP_Data;
 import Bean.ETL_Bean_ErrorLog_Data;
+import Bean.ETL_Bean_PARTY_PHONE_Data;
 import DB.ETL_P_Data_Writer;
 import DB.ETL_P_EData_Filter;
 import DB.ETL_P_ErrorLog_Writer;
@@ -25,7 +27,7 @@ import Tool.ETL_Tool_StringX;
 public class ETL_E_CALENDAR extends Extract {
 
 	public ETL_E_CALENDAR() {
-		
+
 	}
 
 	public ETL_E_CALENDAR(String filePath, String fileTypeName, String batch_no, String exc_central_no,
@@ -40,9 +42,9 @@ public class ETL_E_CALENDAR extends Extract {
 					this.exc_record_date, this.upload_no, this.program_no);
 		} catch (Exception e) {
 			e.printStackTrace();
-		} 
+		}
 	}
-	
+
 	// 進階檢核參數
 	private boolean advancedCheck = ETL_Profile.AdvancedCheck;
 
@@ -58,49 +60,31 @@ public class ETL_E_CALENDAR extends Extract {
 
 	// list data筆數
 	private int dataCount = 0;
-	
-	// insert errorLog fail Count  // TODO V6_2
-	private int oneFileInsertErrorCount = 0;
 
+	// insert errorLog fail Count // TODO V6_2
+	private int oneFileInsertErrorCount = 0;
 
 	// Data儲存List
 	private List<ETL_Bean_CALENDAR_TEMP_Data> dataList = new ArrayList<ETL_Bean_CALENDAR_TEMP_Data>();
-
-	// class生成時, 取得所有檢核用子map, 置入母map內
-//	{
-//		try {
-//
-//			checkMaps = new ETL_Q_ColumnCheckCodes().getCheckMaps(checkMapArray);
-//
-//		} catch (Exception ex) {
-//			checkMaps = null;
-//			System.out.println("ETL_E_CALENDAR 抓取checkMaps資料有誤!"); // TODO
-//			ex.printStackTrace();
-//		}
-//	};
 
 	// 讀取檔案
 	// 根據(1)代號 (2)年月日yyyyMMdd, 開啟讀檔路徑中符合檔案
 	// 回傳boolean 成功(true)/失敗(false)
 	public void read_CALENDAR_File(String filePath, String fileTypeName, String batch_no, String exc_central_no,
-			Date exc_record_date, String upload_no, String program_no) throws Exception { 
+			Date exc_record_date, String upload_no, String program_no) throws Exception {
 
-		// TODO V6_2 start
 		// 取得所有檢核用子map, 置入母map內
 		try {
-
 			checkMaps = new ETL_Q_ColumnCheckCodes().getCheckMaps(exc_record_date, exc_central_no, checkMapArray);
 		} catch (Exception ex) {
 			checkMaps = null;
 			System.out.println("ETL_E_CALENDAR 抓取checkMaps資料有誤!"); // TODO V6_2
 			ex.printStackTrace();
 		}
-		// TODO V6_2 end
 
 		System.out.println("#######Extrace - ETL_E_CALENDAR - Start");
 
 		try {
-
 			if (ETL_P_Log.query_ETL_Detail_Log_Done(batch_no, exc_central_no, exc_record_date, upload_no, "E",
 					program_no)) {
 
@@ -138,19 +122,15 @@ public class ETL_E_CALENDAR extends Extract {
 				// 取得檔案
 				File parseFile = fileList.get(i);
 
-				// TODO V5 START
 				ETL_Tool_FileByteUtil fileByteUtil = new ETL_Tool_FileByteUtil(parseFile.getAbsolutePath(),
 						ETL_E_CALENDAR.class);// TODO
-				// TODO V5 END
 
 				// 檔名
 				String fileName = parseFile.getName();
 
-				// TODO V5 START
 				// 讀檔檔名英文字轉大寫比較
 				if (!ETL_Tool_FormatCheck.isEmpty(fileName))
 					fileName = fileName.toUpperCase();
-				// TODO V5 END
 
 				Date parseStartDate = new Date(); // 開始執行時間
 				System.out.println("解析檔案： " + fileName + " Start " + parseStartDate);
@@ -164,7 +144,7 @@ public class ETL_E_CALENDAR extends Extract {
 
 				// 報送單位非預期, 不進行解析
 				if (exc_central_no == null || "".equals(exc_central_no.trim())) {
-					System.out.println("## ETL_E_CALENDAR - read_CALENDAR_File - 控制程式無提供報送單位，不進行解析！"); 
+					System.out.println("## ETL_E_CALENDAR - read_CALENDAR_File - 控制程式無提供報送單位，不進行解析！");
 					processErrMsg = processErrMsg + "控制程式無提供報送單位，不進行解析！\n";
 					continue;
 				} else if (!exc_central_no.trim().equals(pfn.getCentral_No().trim())) {
@@ -175,7 +155,7 @@ public class ETL_E_CALENDAR extends Extract {
 
 				// 資料日期非預期, 不進行解析
 				if (exc_record_date == null) {
-					System.out.println("## ETL_E_CALENDAR - read_CALENDAR_File - 控制程式無提供資料日期，不進行解析！"); 
+					System.out.println("## ETL_E_CALENDAR - read_CALENDAR_File - 控制程式無提供資料日期，不進行解析！");
 					processErrMsg = processErrMsg + "控制程式無提供資料日期，不進行解析！\n";
 					continue;
 				} else if (!exc_record_date.equals(pfn.getRecord_Date())) {
@@ -188,22 +168,20 @@ public class ETL_E_CALENDAR extends Extract {
 				int rowCount = 1; // 從1開始
 				// 成功計數
 				int successCount = 0;
+				// 警示計數(預設值) // TODO V11
+				int warningCount = 0;
 				// 失敗計數
 				int failureCount = 0;
-
-				// TODO START
-				// // 尾錄總數
-				// int iTotalCount = 0;
-
+				// error_log data // TODO V11
+				ETL_Bean_ErrorLog_Data errorLog_Data;
 				// 紀錄是否第一次
 				boolean isFirstTime = false;
-				// TODO V5 END
 
-				try { 
+				try {
 
-					// 開始前ETL_FILE_Log寫入DB 
+					// 開始前ETL_FILE_Log寫入DB
 					ETL_P_Log.write_ETL_FILE_Log(pfn.getBatch_no(), pfn.getCentral_No(), exc_record_date /* TODO V3 */,
-							pfn.getFile_Type(), pfn.getFile_Name(), upload_no, "E", parseStartDate, null, 0, 0, 0,
+							pfn.getFile_Type(), pfn.getFile_Name(), upload_no, "E", parseStartDate, null, 0, 0, 0, 0,
 							pfn.getFileName());
 
 					// 嚴重錯誤訊息變數
@@ -215,31 +193,19 @@ public class ETL_E_CALENDAR extends Extract {
 					// ETL_Error Log寫入輔助工具
 					ETL_P_ErrorLog_Writer errWriter = new ETL_P_ErrorLog_Writer();
 
-					//TODO V5 START
-					// 讀檔並將結果注入ETL_字串處理Queue
-					// strQueue.setBytesList(ETL_Tool_FileByteUtil.getFilesBytes(parseFile.getAbsolutePath()));
-					// 首、明細、尾錄, 基本組成檢查
-					// boolean isFileFormatOK =
-					// ETL_Tool_FileFormat.checkBytesList(strQueue.getBytesList());
-
-					// TODO V6 START
-					//int isFileOK = fileByteUtil.isFileOK(parseFile.getAbsolutePath());
 					int isFileOK = fileByteUtil.isFileOK(pfn, upload_no, parseFile.getAbsolutePath());
-					// TODO V6 END
+
 					boolean isFileFormatOK = isFileOK != 0 ? true : false;
-					// TODO V5 END 
-					
-				     fileFmtErrMsg = isFileFormatOK ? "":"區別碼錯誤";
-					
+
+					fileFmtErrMsg = isFileFormatOK ? "" : "區別碼錯誤";
+
 					// 首錄檢查
 					if (isFileFormatOK) {
 
-						// TODO V5 START
 						// 注入指定範圍筆數資料到QUEUE
 						strQueue.setBytesList(fileByteUtil.getFilesBytes());
-						// TODO V5 END
 
-						// strQueue工具注入第一筆資料 // 
+						// strQueue工具注入第一筆資料 //
 						strQueue.setTargetString();
 
 						// // 檢查整行bytes數(1 + 7 + 8 7= 23)
@@ -287,25 +253,19 @@ public class ETL_E_CALENDAR extends Extract {
 						rowCount++; // 處理行數 + 1
 					}
 
-					// TODO V5 START
 					// 實際處理明細錄筆數
 					int grandTotal = 0;
-					// TODO V5 END
 
-					// TODO V5 START
 					// 逐行讀取檔案
 					if (isFileFormatOK && "".equals(fileFmtErrMsg)) { // 沒有嚴重錯誤時進行
 						if (rowCount == 2) {
 							isFirstTime = true;
 						}
-						// while (strQueue.setTargetString() < strQueue.getByteListSize()) {
+
 						while (grandTotal < (isFileOK - 2)) {
 
 							strQueue.setTargetString();
 
-					// TODO V5 END
-						
-							
 							ETL_Bean_CALENDAR_TEMP_Data data = new ETL_Bean_CALENDAR_TEMP_Data(pfn, null, null, null);
 							data.setRow_count(rowCount);
 
@@ -315,20 +275,23 @@ public class ETL_E_CALENDAR extends Extract {
 								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 										String.valueOf(rowCount), "行數bytes檢查", "非預期23"));
 
-
 								// 明細錄資料bytes不正確, 跳過此行後續檢核, 執行下一行
 								failureCount++;
 								rowCount++; // 處理行數 ++
-								grandTotal++; //TODO V6
-			
+								grandTotal++; // TODO V6
+
 								continue;
 							}
 
+							// TODO V11 寫入ErrorList
+							List<ETL_Bean_ErrorLog_Data> errorList = new ArrayList<ETL_Bean_ErrorLog_Data>();
+
 							// 區別碼檢核 *
-							String typeCode = strQueue.popBytesString(1); // 
+							String typeCode = strQueue.popBytesString(1);
 							if (!"2".equals(typeCode)) {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 										String.valueOf(rowCount), "區別碼", "非預期:" + typeCode));
 							}
 
@@ -339,7 +302,7 @@ public class ETL_E_CALENDAR extends Extract {
 									data.setCalendar_day(ETL_Tool_StringX.toUtilDate(calendar_day));
 								} else if (advancedCheck) {
 									data.setError_mark("Y");
-									errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+									errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 											String.valueOf(rowCount), "日期", "明細資料日期格式錯誤:" + calendar_day));
 
 								}
@@ -352,33 +315,54 @@ public class ETL_E_CALENDAR extends Extract {
 							// 是否為營業日檢核 V3 改成必填
 							if (ETL_Tool_FormatCheck.isEmpty(is_business_day)) {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 										String.valueOf(rowCount), "是否為營業日", "空值"));
 							} else if (!checkMaps.get("T_5").containsKey(is_business_day.trim())) {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 										String.valueOf(rowCount), "是否為營業日", "非預期:" + is_business_day));
 							}
 
 							// 保留欄位檢核(13)
 							String keepColumn = strQueue.popBytesString(13);
 
+							String tempSRC_Data = "";
+							for (int j = 0; j < errorList.size(); j++) {
+							
+								// 第一筆時，將轉換String預存
+								if (j == 0) {
+									tempSRC_Data = strQueue.getAllString(); // 無難字轉換
+									// tempSRC_Data = strQueue.getAllDiffString(); // 有難字轉換
+								}
+								// 寫入整行String
+								errorList.get(j).setSRC_DATA(tempSRC_Data);
+
+								// 寫入一個Error
+								errWriter.addErrLog(errorList.get(j));
+
+								// 最後一筆時將預存List清空
+								if (j == (errorList.size() - 1)) {
+									// 將List清空
+									errorList.clear();
+								}
+							}
+
 							// data list 加入一個檔案
 							addData(data);
 
 							if ("Y".equals(data.getError_mark())) {
 								failureCount++;
+							} else if ("W".equals(data.getError_mark())) { // TODO V11 新增一個else if, 在 if 與else之間
+								// 若參數為"W" 計入warning Count
+								warningCount++;
+								// 將Error_Mark改為"", 視為正常繼續ETL作業
+								transDataErrorMark(data, "");
 							} else {
 								successCount++;
 							}
 
-							// TODO V5 START
 							// 實際處理明細錄筆數累加
 							grandTotal += 1;
-
-							// System.out.println("實際處理列數:" + rowCount + " / 實際處理明細錄筆數:" + grandTotal + " /
-							// 目前處理資料第"
-							// + strQueue.getBytesListIndex() + "筆");
 
 							rowCount++; // 處理行數 + 1
 
@@ -390,34 +374,21 @@ public class ETL_E_CALENDAR extends Extract {
 									|| (!isFirstTime && (strQueue.getBytesListIndex() % ETL_Profile.ETL_E_Stage == 0))
 
 							) {
-
-								// System.out.println("=======================================");
-								//
-								// if (isFirstTime)
-								// System.out.println("第一次處理，資料來源須扣除首錄筆數");
 								// 記錄非初次
 								isFirstTime = false;
-
-								// System.out
-								// .println("累積處理資料已達到限制處理筆數範圍:" + ETL_Profile.ETL_E_Stage +
-								// "筆，再度切割資料來源進入QUEUE");
 
 								// 注入指定範圍筆數資料到QUEUE
 								strQueue.setBytesList(fileByteUtil.getFilesBytes());
 								// 初始化使用筆數
 								strQueue.setBytesListIndex(0);
 
-								// System.out.println("初始化提取處理資料，目前處理資料為:" + strQueue.getBytesListIndex());
-								// System.out.println("=======================================");
 							}
-							// TODO V5 END
-
 						}
 
 					}
 					// Calendar_Data寫入DB
 					insert_Calendar_Data();
-					
+
 					// TODO V6_2 start
 					// 修正筆數, 考慮寫入資料庫時寫入失敗的狀況
 					successCount = successCount - this.oneFileInsertErrorCount;
@@ -486,8 +457,8 @@ public class ETL_E_CALENDAR extends Extract {
 									String.valueOf(rowCount), "總筆數", fileFmtErrMsg));
 						}
 
-						if ((rowCount - 2) != (successCount + failureCount)) { 
-							fileFmtErrMsg = "總筆數 <> 成功比數 + 失敗筆數";
+						if ((rowCount - 2) != (successCount + warningCount + failureCount)) {
+							fileFmtErrMsg = "總筆數 <> 成功比數   + 警示筆數 + 失敗筆數";
 							errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 									String.valueOf(rowCount), "程式檢核", fileFmtErrMsg));
 						}
@@ -500,18 +471,7 @@ public class ETL_E_CALENDAR extends Extract {
 					String file_exe_result;
 					// 執行結果說明
 					String file_exe_result_description;
-					//TODO V6 START
-//					if (!isFileFormatOK) {
-//						file_exe_result = "S";
-//						file_exe_result_description = "解析檔案出現嚴重錯誤-區別碼錯誤";
-//						processErrMsg = processErrMsg + pfn.getFileName() + "解析檔案出現嚴重錯誤-區別碼錯誤\n";
-//
-//						// 寫入Error Log
-//						errWriter.addErrLog(
-//								new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", "0", "區別碼", "解析檔案出現嚴重錯誤-區別碼錯誤"));
-//
-//					} else
-					//TODO V6 END
+
 					if (!"".equals(fileFmtErrMsg)) {
 						file_exe_result = "S";
 						file_exe_result_description = "解析檔案出現嚴重錯誤";
@@ -521,33 +481,33 @@ public class ETL_E_CALENDAR extends Extract {
 						file_exe_result_description = "執行結果無錯誤資料";
 					} else {
 						file_exe_result = "D";
-						// file_exe_result_description = "錯誤資料筆數: " + detail_ErrorCount; // 
-						file_exe_result_description = "錯誤資料筆數: " + failureCount; // 
+						// file_exe_result_description = "錯誤資料筆數: " + detail_ErrorCount; //
+						file_exe_result_description = "錯誤資料筆數: " + failureCount; //
 					}
 
-					// Error_Log寫入DB 
+					// Error_Log寫入DB
 					errWriter.insert_Error_Log();
 
 					// 處理後更新ETL_FILE_Log
 					ETL_P_Log.update_End_ETL_FILE_Log_NO_FILE_TYPE(pfn.getBatch_no(), pfn.getCentral_No(),
 							exc_record_date, pfn.getFile_Name(), upload_no, "E", parseEndDate,
-							(successCount + failureCount), successCount, failureCount, file_exe_result,
+							(successCount + warningCount + failureCount), successCount, warningCount, failureCount, file_exe_result,
 							file_exe_result_description);
 
 				} catch (Exception ex) {
 					// 發生錯誤時, 資料List & 計數 reset // TODO V6_2
-					this.dataCount = 0; 
+					this.dataCount = 0;
 					this.dataList.clear();
-					
-					//  NEW
+
+					// NEW
 					// 寫入Error_Log
 					ETL_P_Log.write_Error_Log(batch_no, exc_central_no, exc_record_date, null, fileTypeName, upload_no,
-							"E", "0", "ETL_E_CALENDAR程式處理", ex.getMessage(), null); //  NEW
+							"E", "0", "ETL_E_CALENDAR程式處理", ex.getMessage(), null); // NEW
 
 					// 執行錯誤更新ETL_FILE_Log
 					ETL_P_Log.update_End_ETL_FILE_Log(pfn.getBatch_no(), pfn.getCentral_No(), exc_record_date,
-							pfn.getFile_Type(), pfn.getFile_Name(), upload_no, "E", new Date(), 0, 0, 0, "S",
-							ex.getMessage()); //  (0, 0, 0)<=(iTotalCount, successCount, failureCount)
+							pfn.getFile_Type(), pfn.getFile_Name(), upload_no, "E", new Date(), 0, 0, 0, 0, "S",
+							ex.getMessage()); // (0, 0, 0)<=(iTotalCount, successCount, failureCount)
 					processErrMsg = processErrMsg + ex.getMessage() + "\n";
 
 					ex.printStackTrace();
@@ -557,7 +517,7 @@ public class ETL_E_CALENDAR extends Extract {
 				detail_ErrorCount = detail_ErrorCount + failureCount;
 
 			}
-			
+
 			// TODO V6_2 Start
 			// 過濾軌跡資料
 			try {
@@ -580,13 +540,13 @@ public class ETL_E_CALENDAR extends Extract {
 			// 執行結果說明
 			String detail_exe_result_description;
 
-			if (fileList.size() == 0) { // 
+			if (fileList.size() == 0) { //
 				detail_exe_result = "S";
 				detail_exe_result_description = "缺檔案類型：" + fileTypeName + " 檔案";
 
 				// 寫入Error_Log
 				ETL_P_Log.write_Error_Log(batch_no, exc_central_no, exc_record_date, null, fileTypeName, upload_no, "E",
-						"0", "ETL_E_CALENDAR程式處理", detail_exe_result_description, null); //  NEW
+						"0", "ETL_E_CALENDAR程式處理", detail_exe_result_description, null); // NEW
 
 			} else if (!"".equals(processErrMsg)) {
 				detail_exe_result = "S";
@@ -605,7 +565,7 @@ public class ETL_E_CALENDAR extends Extract {
 
 		} catch (Exception ex) {
 			ETL_P_Log.write_Error_Log(batch_no, exc_central_no, exc_record_date, null, fileTypeName, upload_no, "E",
-					"0", "ETL_E_CALENDAR程式處理", ex.getMessage(), null); //  NEW
+					"0", "ETL_E_CALENDAR程式處理", ex.getMessage(), null); // NEW
 
 			// 處理後更新ETL_Detail_Log
 			ETL_P_Log.update_End_ETL_Detail_Log(batch_no, exc_central_no, exc_record_date, upload_no, "E", program_no,
@@ -643,16 +603,60 @@ public class ETL_E_CALENDAR extends Extract {
 
 		Boolean isSuccess = ETL_P_Data_Writer.insertByDefineArrayListObject2(this.dataList, insertAdapter); // TODO V6_2
 		int errorCount = insertAdapter.getErrorCount(); // TODO V6_2
-		
+
 		if (isSuccess) {
 			System.out.println("insert_CALENDAR_Datas 寫入 " + this.dataList.size() + "(-" + errorCount + ")筆資料!"); // TODO V6_2
 			this.oneFileInsertErrorCount = this.oneFileInsertErrorCount + errorCount; // TODO V6_2
 		} else {
 			throw new Exception("insert_CALENDAR_Datas 發生錯誤");
 		}
-		
+
 		this.dataCount = 0;
 		this.dataList.clear();
 
 	}
+
+	// TODO V11
+	// 轉換Error_Mark
+	private static void transDataErrorMark(ETL_Bean_CALENDAR_TEMP_Data data, String trans_Error_Mark) {
+		if (data != null) {
+			// 欲將Error_Mark改成W
+			if ("W".equals(trans_Error_Mark)) {
+				// 已經是"Y"的不進行變更, 反之更新為"W"
+				if ("Y".equals(data.getError_mark())) {
+					return;
+				} else {
+					data.setError_mark(trans_Error_Mark);
+					return;
+				}
+			} else {
+				// 其餘直接轉換
+				data.setError_mark(trans_Error_Mark);
+				return;
+			}
+		}
+	}
+
+	public static void main(String[] argv) throws Exception {
+
+		ETL_E_CALENDAR program = new ETL_E_CALENDAR();
+
+		String filePath, fileTypeName, batch_no, exc_central_no, exc_record_date, upload_no, program_no;
+
+		try {
+			filePath = "D:\\company\\pershing\\agribank\\test_data\\20181025";
+			fileTypeName = "CALENDAR";
+			batch_no = "test15";
+			exc_central_no = "018";
+			exc_record_date = "20180116";
+			upload_no = "900";
+			program_no = "o";
+			program.read_CALENDAR_File(filePath, fileTypeName, batch_no, exc_central_no, new SimpleDateFormat("yyyyMMdd").parse(exc_record_date), upload_no, program_no);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
 }

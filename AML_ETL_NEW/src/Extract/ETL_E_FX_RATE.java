@@ -1,6 +1,7 @@
 package Extract;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -66,19 +67,6 @@ public class ETL_E_FX_RATE extends Extract {
 	// Data儲存List
 	// TODO
 	private List<ETL_Bean_FX_RATE_TEMP_Data> dataList = new ArrayList<ETL_Bean_FX_RATE_TEMP_Data>();
-
-//	// class生成時, 取得所有檢核用子map, 置入母map內
-//	{
-//		try {
-//
-//			checkMaps = new ETL_Q_ColumnCheckCodes().getCheckMaps(checkMapArray);
-//
-//		} catch (Exception ex) {
-//			checkMaps = null;
-//			System.out.println("ETL_E_FX_RATE 抓取checkMaps資料有誤!"); // TODO
-//			ex.printStackTrace();
-//		}
-//	};
 
 	// 讀取檔案
 	// 根據(1)代號 (2)年月日yyyyMMdd, 開啟讀檔路徑中符合檔案
@@ -196,12 +184,13 @@ public class ETL_E_FX_RATE extends Extract {
 				int rowCount = 1; // 從1開始
 				// 成功計數
 				int successCount = 0;
+				// 警示計數(預設值) // TODO V11
+				int warningCount = 0;
 				// 失敗計數
 				int failureCount = 0;
-				// TODO V5 START
-				// 尾錄總數
-				// int iTotalCount = 0;
-
+				// error_log data // TODO V11
+				ETL_Bean_ErrorLog_Data errorLog_Data;
+				
 				// 紀錄是否第一次
 				boolean isFirstTime = false;
 				// TODO V5 END
@@ -210,7 +199,7 @@ public class ETL_E_FX_RATE extends Extract {
 
 					// 開始前ETL_FILE_Log寫入DB // TODO V3
 					ETL_P_Log.write_ETL_FILE_Log(pfn.getBatch_no(), pfn.getCentral_No(), exc_record_date,
-							pfn.getFile_Type(), pfn.getFile_Name(), upload_no, "E", parseStartDate, null, 0, 0, 0,
+							pfn.getFile_Type(), pfn.getFile_Name(), upload_no, "E", parseStartDate, null, 0, 0, 0, 0,
 							pfn.getFileName());
 
 					// 嚴重錯誤訊息變數
@@ -221,14 +210,6 @@ public class ETL_E_FX_RATE extends Extract {
 					// ETL_Error Log寫入輔助工具
 					ETL_P_ErrorLog_Writer errWriter = new ETL_P_ErrorLog_Writer();
 
-					// TODO V5 START
-					// 讀檔並將結果注入ETL_字串處理Queue
-					// strQueue.setBytesList(ETL_Tool_FileByteUtil.getFilesBytes(parseFile.getAbsolutePath()));
-					// 首、明細、尾錄, 基本組成檢查
-					// boolean isFileFormatOK =
-					// ETL_Tool_FileFormat.checkBytesList(strQueue.getBytesList());
-					// TODO V6 START
-					//int isFileOK = fileByteUtil.isFileOK(parseFile.getAbsolutePath());
 					int isFileOK = fileByteUtil.isFileOK(pfn, upload_no, parseFile.getAbsolutePath());
 					// TODO V6 END
 					boolean isFileFormatOK = isFileOK != 0 ? true : false;
@@ -327,12 +308,14 @@ public class ETL_E_FX_RATE extends Extract {
 								// 明細錄資料bytes不正確, 跳過此行後續檢核, 執行下一行
 								continue;
 							}
+							
+							List<ETL_Bean_ErrorLog_Data> errorList = new ArrayList<ETL_Bean_ErrorLog_Data>();
 
 							// 區別碼檢核
 							String typeCode = strQueue.popBytesString(1); // TODO V4
 							if (!"2".equals(typeCode)) {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 										String.valueOf(rowCount), "區別碼", "非預期"));
 							}
 
@@ -340,13 +323,13 @@ public class ETL_E_FX_RATE extends Extract {
 							String value_date = strQueue.popBytesString(8);
 							if (ETL_Tool_FormatCheck.isEmpty(value_date)) {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 										String.valueOf(rowCount), "匯率日期", "空值"));
 							} else if (ETL_Tool_FormatCheck.checkDate(value_date)) {
 								data.setValue_date(ETL_Tool_StringX.toUtilDate(value_date));
 							} else {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 										String.valueOf(rowCount), "匯率日期", "日期格式錯誤:" + value_date));
 							}
 
@@ -355,7 +338,7 @@ public class ETL_E_FX_RATE extends Extract {
 							data.setCurrency_code_1(currency_code_1);
 							if (ETL_Tool_FormatCheck.isEmpty(currency_code_1)) {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 										String.valueOf(rowCount), "外幣代號1", "空值"));
 							}
 
@@ -364,7 +347,7 @@ public class ETL_E_FX_RATE extends Extract {
 							data.setCurrency_code_2(currency_code_2);
 							if (ETL_Tool_FormatCheck.isEmpty(currency_code_2)) {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 										String.valueOf(rowCount), "外幣代號2", "空值"));
 							}
 
@@ -372,31 +355,54 @@ public class ETL_E_FX_RATE extends Extract {
 							String exchange_rate = strQueue.popBytesString(15);
 							if (ETL_Tool_FormatCheck.isEmpty(exchange_rate)) {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 										String.valueOf(rowCount), "匯率", "空值"));
 
 							} else if (!ETL_Tool_FormatCheck.checkNum(exchange_rate)) {
 								data.setError_mark("Y");
-								errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
+								errorList.add(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 										String.valueOf(rowCount), "匯率", "非數字: " + exchange_rate));
 							} else {
 								data.setExchange_rate(ETL_Tool_StringX.strToBigDecimal(exchange_rate, 6));
+							}
+							
+							// TODO V11  
+							// ErrorList統一寫入PK值, 再寫入Error Log
+							String tempSRC_Data = "";
+							for (int j = 0; j < errorList.size(); j++) {
+								// 第一筆時，將轉換String預存
+								if (j == 0) {
+									tempSRC_Data = strQueue.getAllString(); // 無難字轉換
+									// tempSRC_Data = strQueue.getAllDiffString(); // 有難字轉換
+								}
+								// 寫入整行String
+								errorList.get(j).setSRC_DATA(tempSRC_Data);
+
+								// 寫入一個Error
+								errWriter.addErrLog(errorList.get(j));
+
+								// 最後一筆時將預存List清空
+								if (j == (errorList.size() - 1)) {
+									// 將List清空
+									errorList.clear();
+								}
 							}
 
 							addData(data);
 
 							if ("Y".equals(data.getError_mark())) {
 								failureCount++;
-							} else {
+							} else if ("W".equals(data.getError_mark())) { // TODO V11  新增一個else if, 在 if 與else之間
+								// 若參數為"W" 計入warning Count
+								warningCount++;
+								// 將Error_Mark改為"", 視為正常繼續ETL作業
+								transDataErrorMark(data, "");
+							}else {
 								successCount++;
 							}
 							// TODO V5 START
 							// 實際處理明細錄筆數累加
 							grandTotal += 1;
-
-							// System.out.println("實際處理列數:" + rowCount + " / 實際處理明細錄筆數:" + grandTotal + " /
-							// 目前處理資料第"
-							// + strQueue.getBytesListIndex() + "筆");
 
 							rowCount++; // 處理行數 + 1
 
@@ -409,24 +415,13 @@ public class ETL_E_FX_RATE extends Extract {
 
 							) {
 
-								// System.out.println("=======================================");
-								//
-								// if (isFirstTime)
-								// System.out.println("第一次處理，資料來源須扣除首錄筆數");
 								// 記錄非初次
 								isFirstTime = false;
-
-								// System.out
-								// .println("累積處理資料已達到限制處理筆數範圍:" + ETL_Profile.ETL_E_Stage +
-								// "筆，再度切割資料來源進入QUEUE");
 
 								// 注入指定範圍筆數資料到QUEUE
 								strQueue.setBytesList(fileByteUtil.getFilesBytes());
 								// 初始化使用筆數
 								strQueue.setBytesListIndex(0);
-
-								// System.out.println("初始化提取處理資料，目前處理資料為:" + strQueue.getBytesListIndex());
-								// System.out.println("=======================================");
 							}
 							// TODO V5 END
 						}
@@ -504,8 +499,8 @@ public class ETL_E_FX_RATE extends Extract {
 						String keepColumn = strQueue.popBytesString(7);
 
 						// 程式統計檢核
-						if ((rowCount - 2) != (successCount + failureCount)) {
-							fileFmtErrMsg = "總筆數 <> 成功比數 + 失敗筆數";
+						if ((rowCount - 2) != (successCount + warningCount + failureCount)) {
+							fileFmtErrMsg = "總筆數 <> 成功比數   + 警示筆數 + 失敗筆數";
 							errWriter.addErrLog(new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E",
 									String.valueOf(rowCount), "程式檢核", fileFmtErrMsg));
 						}
@@ -519,19 +514,6 @@ public class ETL_E_FX_RATE extends Extract {
 					String file_exe_result;
 					// 執行結果說明
 					String file_exe_result_description;
-
-					//TODO V6 START
-//					if (!isFileFormatOK) {
-//						file_exe_result = "S";
-//						file_exe_result_description = "解析檔案出現嚴重錯誤-區別碼錯誤";
-//						processErrMsg = processErrMsg + pfn.getFileName() + "解析檔案出現嚴重錯誤-區別碼錯誤\n";
-//
-//						// 寫入Error Log
-//						errWriter.addErrLog(
-//								new ETL_Bean_ErrorLog_Data(pfn, upload_no, "E", "0", "區別碼", "解析檔案出現嚴重錯誤-區別碼錯誤"));
-//
-//					} else
-					//TODO V6 END
 
 					if (!"".equals(fileFmtErrMsg)) {
 						file_exe_result = "S";
@@ -552,7 +534,7 @@ public class ETL_E_FX_RATE extends Extract {
 					// 處理後更新ETL_FILE_Log
 					ETL_P_Log.update_End_ETL_FILE_Log(pfn.getBatch_no(), pfn.getCentral_No(), exc_record_date,
 							pfn.getFile_Type(), pfn.getFile_Name(), upload_no, "E", parseEndDate,
-							(successCount + failureCount), successCount, failureCount, file_exe_result,
+							(successCount + warningCount +failureCount), successCount, warningCount, failureCount, file_exe_result,
 							file_exe_result_description);
 
 				} catch (Exception ex) { 
@@ -566,7 +548,7 @@ public class ETL_E_FX_RATE extends Extract {
 
 					// 執行錯誤更新ETL_FILE_Log
 					ETL_P_Log.update_End_ETL_FILE_Log(pfn.getBatch_no(), pfn.getCentral_No(), exc_record_date,
-							pfn.getFile_Type(), pfn.getFile_Name(), upload_no, "E", new Date(), 0, 0, 0, "S",
+							pfn.getFile_Type(), pfn.getFile_Name(), upload_no, "E", new Date(), 0, 0,0, 0, "S",
 							ex.getMessage()); // TODO V4 (0, 0, 0)<=(iTotalCount, successCount, failureCount)
 					processErrMsg = processErrMsg + ex.getMessage() + "\n";
 
@@ -659,6 +641,49 @@ public class ETL_E_FX_RATE extends Extract {
 		// 寫入後將計數與資料List清空
 		this.dataCount = 0;
 		this.dataList.clear();
+	}
+	
+	// TODO V11
+	// 轉換Error_Mark
+	private static void transDataErrorMark(ETL_Bean_FX_RATE_TEMP_Data data, String trans_Error_Mark) {
+		if (data != null) {
+			// 欲將Error_Mark改成W
+			if ("W".equals(trans_Error_Mark)) {
+				// 已經是"Y"的不進行變更, 反之更新為"W"
+				if ("Y".equals(data.getError_mark())) {
+					return;
+				} else {
+					data.setError_mark(trans_Error_Mark);
+					return;
+				}
+			} else {
+				// 其餘直接轉換
+				data.setError_mark(trans_Error_Mark);
+				return;
+			}
+		}
+	}
+	
+	public static void main(String[] argv) throws Exception {
+
+		ETL_E_FX_RATE program = new ETL_E_FX_RATE();
+		
+		String filePath, fileTypeName, batch_no, exc_central_no, exc_record_date,upload_no, program_no;
+
+		try {
+			filePath = "D:\\company\\pershing\\agribank\\test_data\\20181025";
+			fileTypeName = "FX_RATE";
+			batch_no = "test14";
+			exc_central_no = "018";
+			exc_record_date = "20171220";
+			upload_no = "900";
+			program_no = "o";
+			program.read_Fx_Rate_File(filePath, fileTypeName, batch_no, exc_central_no, new SimpleDateFormat("yyyyMMdd").parse(exc_record_date), upload_no, program_no);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 	}
 
 }
