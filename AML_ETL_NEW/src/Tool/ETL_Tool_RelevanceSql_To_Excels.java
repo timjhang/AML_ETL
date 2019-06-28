@@ -4,11 +4,19 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.DirectoryNotEmptyException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,71 +34,102 @@ import org.apache.poi.xssf.streaming.SXSSFRow;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 
+import com.jcraft.jsch.ChannelSftp;
+
+import Bean.ETL_Bean_SFTP_Data;
 import Bean.ETL_DETAIL_LOG;
 import Bean.ETL_FILE_LOG;
 import DB.ConnectionHelper;
 import DB.JDBC;
 import Profile.SQLQUERY_Profile;
+import Tool.ETL_Tool_RelevanceSql_To_Excels_SFTP;
+import Tool.ETL_Tool_Relevance_Delete_FileFilter;
+import Tool.ETL_Tool_Relevance_Upload_FileFilter;
 
 public class ETL_Tool_RelevanceSql_To_Excels {
 
-	private int pageMaxRowCount = 65534;
+	private final int pageMaxRowCount = 65534;
+	private final String propertiesPath = "D:\\DataCheck\\sftp.properties";
+
+	private String batch_no;
 	private String record_date = null;
-	private String central_No = null;;
 	private String currentQuery = null;
 	private String savePath = null;
+	private String currDir = null;
+	private String yearDir = null;
+	private String monthDir = null;
+	private java.util.Date recordUtilDate = null;
+	private java.sql.Date recordSqlDate = null;
+
+	private SimpleDateFormat sdf = null;
 	private ArrayList<String> columnNames = null;
 	private static Map<String, Integer> dataMap = null;
 
 	public ETL_Tool_RelevanceSql_To_Excels() {
 	}
 
-	public ETL_Tool_RelevanceSql_To_Excels(String central_No, String record_date) {
-		this.central_No = central_No;
+	public ETL_Tool_RelevanceSql_To_Excels(String batch_no, String record_date) throws ParseException {
+
+		this.batch_no = batch_no;
 		this.record_date = record_date;
-		this.savePath = "D:" + File.separator + "DataCheck" + File.separator + central_No;
+
+		sdf = new SimpleDateFormat("yyyy-MM-dd");
+		this.recordUtilDate = sdf.parse(record_date);
+		this.recordSqlDate = new java.sql.Date(recordUtilDate.getTime());
+
+		sdf = new SimpleDateFormat("MM");
+		this.monthDir = sdf.format(recordUtilDate);
+
+		sdf = new SimpleDateFormat("yyyy");
+		this.yearDir = sdf.format(recordUtilDate);
 	}
 
-	public static void main(String[] args)
-			throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+	public static void main(String[] args) throws InstantiationException, IllegalAccessException,
+			ClassNotFoundException, SQLException, ParseException {
 
 		long time1, time2;
 
 		time1 = System.currentTimeMillis();
 
-		boolean success = ETL_Tool_RelevanceSql_To_Excels.execute("ETRS01", "952", "2018-07-05");
-//		boolean success = ETL_Tool_RelevanceSql_To_Excels.execute(args[0], args[1], args[2]);
+		// boolean success = new ETL_Tool_RelevanceSql_To_Excels("R0000011",
+		// "2018-10-22").execute("018");
+		boolean success = new ETL_Tool_RelevanceSql_To_Excels(args[0], args[1]).execute(args[2]);
 
 		time2 = System.currentTimeMillis();
 
 		System.out.println("執行結果" + (success ? "成功" : "失敗") + "/花了：" + (time2 - time1) + "豪秒");
 	}
 
-	public static boolean execute(String batch_no, String central_no, String record_date)
+	public boolean execute(String centralNos)
 			throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
 
-		String[] centralNoarr = central_no.split(",");
-		String[] querys = SQLQUERY_Profile.getQuerys();
+		String[] centralNoarr = null, querys = null;
+
 		JDBC jdbc = null;
+		File zipFile = null;
+		ChannelSftp channelSftp = null;
+
 		ETL_FILE_LOG fileLog = null;
 		ETL_DETAIL_LOG detailLog = null;
-		ETL_Tool_RelevanceSql_To_Excels etl_Tool_RelevanceSql_To_Excels = null;
 
 		boolean isSuccess = false;
 
+		ETL_Bean_SFTP_Data data = null;
 		try {
+			centralNoarr = centralNos.split(",");
+			querys = SQLQUERY_Profile.getQuerys();
+
 			jdbc = new JDBC();
 
 			for (String centralNo : centralNoarr) {
-				System.out.println("\n執行單位:" + centralNo);
+				this.savePath = "D:" + File.separator + "DataCheck" + File.separator + centralNo;
 
-				java.sql.Date recordDate = new java.sql.Date(
-						new SimpleDateFormat("yyyy-MM-dd").parse(record_date).getTime());
+				System.out.println("\n執行單位:" + centralNo);
 
 				detailLog = new ETL_DETAIL_LOG();
 				detailLog.setBatch_no(batch_no);
 				detailLog.setCentral_no(centralNo);
-				detailLog.setRecord_date(recordDate);
+				detailLog.setRecord_date(recordSqlDate);
 				detailLog.setExe_status("S");
 				detailLog.setExe_result("");
 				detailLog.setExe_result_description("執行中");
@@ -98,7 +137,6 @@ public class ETL_Tool_RelevanceSql_To_Excels {
 				jdbc.insertLog(detailLog);
 
 				try {
-					etl_Tool_RelevanceSql_To_Excels = new ETL_Tool_RelevanceSql_To_Excels(centralNo, record_date);
 
 					dataMap = new HashMap<String, Integer>();
 
@@ -107,7 +145,7 @@ public class ETL_Tool_RelevanceSql_To_Excels {
 						fileLog = new ETL_FILE_LOG();
 						fileLog.setBatch_no(batch_no);
 						fileLog.setCentral_no(centralNo);
-						fileLog.setRecord_date(recordDate);
+						fileLog.setRecord_date(recordSqlDate);
 						fileLog.setFile_name(SQLQUERY_Profile.getFileName(query));
 						fileLog.setExe_result("");
 						fileLog.setExe_result_description("執行中");
@@ -115,9 +153,8 @@ public class ETL_Tool_RelevanceSql_To_Excels {
 						jdbc.insertLog(fileLog);
 
 						try {
-							ResultSet rs = etl_Tool_RelevanceSql_To_Excels.getResultsetFromSql(query);
-							etl_Tool_RelevanceSql_To_Excels
-									.generateExcel(etl_Tool_RelevanceSql_To_Excels.processResultSet(rs));
+							ResultSet rs = getResultsetFromSql(centralNo, query);
+							generateExcel(centralNo, processResultSet(rs));
 
 							fileLog.setExe_result("Y");
 							fileLog.setExe_result_description("無錯誤資料");
@@ -125,7 +162,7 @@ public class ETL_Tool_RelevanceSql_To_Excels {
 						} catch (Exception e) {
 
 							fileLog.setExe_result("S");
-							fileLog.setExe_result_description(e.toString().substring(0, 400));
+							fileLog.setExe_result_description(getDescription(e));
 							jdbc.updateLog(fileLog);
 						}
 
@@ -137,15 +174,79 @@ public class ETL_Tool_RelevanceSql_To_Excels {
 
 					jdbc.updateLog(detailLog);
 				} catch (Exception e) {
-
+					e.printStackTrace();
 					detailLog.setExe_status("E");
 					detailLog.setExe_result("S");
-					detailLog.setExe_result_description(e.toString().substring(0, 400));
+					detailLog.setExe_result_description(getDescription(e));
 					jdbc.updateLog(detailLog);
 				}
 
-				etl_Tool_RelevanceSql_To_Excels.generateDataCheckExcel();
+				generateDataCheckExcel(centralNo);
+
 				System.out.println(centralNo + "關連檔產生完成");
+
+				ETL_Tool_RelevanceSql_To_Excels_SFTP sftp = new ETL_Tool_RelevanceSql_To_Excels_SFTP(propertiesPath);
+
+				System.out.println("進行壓縮關聯檔作業..");
+				zipFile = sftp.zipFilesByWinzipaes(savePath, currDir);
+
+				if (zipFile != null) {
+					System.out.printf("壓縮成功，檔名:%s\n", zipFile.getName());
+					data = sftp.getData(centralNo);
+					channelSftp = sftp.connect(centralNo, data);
+
+					String currDir = data.getDirectory();
+
+					sftp.makeDir(currDir, yearDir, channelSftp);
+					currDir = currDir + "/" + yearDir;
+
+					sftp.makeDir(currDir, monthDir, channelSftp);
+					currDir = currDir + "/" + monthDir;
+
+					sftp.upload(currDir, zipFile, channelSftp);
+					System.out.printf("上傳成功，放置SFTP SERVER路徑:%s\n", currDir);
+
+					channelSftp.disconnect();
+					System.out.println("SFTP channel disconnect.");
+
+					System.out.printf("檢查是否需要進行刪除動作，移除未保留資料:");
+					File[] files = ETL_Tool_Relevance_Delete_FileFilter.getFiles(savePath, yearDir, monthDir);
+					int delNum = files.length;
+
+					System.out.println(delNum == 0 ? "否" : "是，需刪除" + delNum + "筆");
+
+					for (int i = 0; i < delNum; i++) {
+						File file = files[i];
+						Path dir = Paths.get(file.getAbsolutePath());
+
+						System.out.println(
+								(i + 1) + ".刪除" + (file.isDirectory() ? "資料夾:" : "壓縮檔:") + dir.toAbsolutePath());
+
+						try {
+							Files.deleteIfExists(dir);
+						} catch (DirectoryNotEmptyException e) {
+							Files.walkFileTree(dir, new SimpleFileVisitor<Path>() {
+								@Override
+								public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+										throws IOException {
+									Files.delete(file);
+									return FileVisitResult.CONTINUE;
+								}
+
+								@Override
+								public FileVisitResult postVisitDirectory(Path dir, IOException exc)
+										throws IOException {
+									Files.delete(dir);
+									return super.postVisitDirectory(dir, exc);
+								}
+							});
+						} catch (Exception e) {
+							System.out.println("刪除失敗，錯誤訊息:" + getDescription(e));
+						}
+					}
+				} else {
+					System.out.println("壓縮關聯檔作業異常");
+				}
 			}
 			isSuccess = true;
 		} catch (Exception e) {
@@ -155,19 +256,12 @@ public class ETL_Tool_RelevanceSql_To_Excels {
 		return isSuccess;
 	}
 
-	/**
-	 * This method returns a ResultSet for the given sql query.
-	 * 
-	 * @throws SQLException
-	 * @throws ClassNotFoundException
-	 * @throws IllegalAccessException
-	 * @throws InstantiationException
-	 */
-	public ResultSet getResultsetFromSql(String sql)
+	// 傳回給定的sql查詢的ResultSet物件
+	public ResultSet getResultsetFromSql(String centralNo, String sql)
 			throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
 		// Connection conn = getDBConnection();
 		this.currentQuery = sql;
-		Connection conn = ConnectionHelper.getDB2ConnGAML(central_No);
+		Connection conn = ConnectionHelper.getDB2ConnGAML(centralNo);
 		ResultSet rs = null;
 		try {
 			// Statement stmt = conn.createStatement();
@@ -185,12 +279,7 @@ public class ETL_Tool_RelevanceSql_To_Excels {
 		return rs;
 	}
 
-	/**
-	 * This method returns a Map with keys as row numbers and values as another
-	 * LinkedHashMap containing key as column name and value as column value ,
-	 * present in the ResulSet. We have used LinkedHashMap because it maintains
-	 * the order in which the values are put in the Map.
-	 */
+	// 將查詢回來的ResultSet物件，處理成Map型態
 	public Map<String, LinkedHashMap<String, String>> processResultSet(ResultSet rs) {
 		columnNames = new ArrayList<String>();
 		LinkedHashMap<String, String> rowDetails = new LinkedHashMap<String, String>();
@@ -225,11 +314,11 @@ public class ETL_Tool_RelevanceSql_To_Excels {
 		return resultMap;
 	}
 
-	public void generateDataCheckExcel() {
+	// 產出ETL傳檔資料關聯檢核總表
+	public void generateDataCheckExcel(String centralNo) {
 		FileOutputStream fileOut = null;
 		SXSSFWorkbook wb = null;
 		SXSSFRow row = null;
-
 		try {
 			wb = new SXSSFWorkbook();
 			SXSSFSheet sheet = wb.createSheet("第1頁");
@@ -276,9 +365,9 @@ public class ETL_Tool_RelevanceSql_To_Excels {
 			sheet.setColumnWidth(1, (int) ((50 + 0.72) * 250));
 			sheet.setColumnWidth(2, (int) ((50 + 0.72) * 85));
 
-			String fileName = central_No + "_ETL傳檔資料關聯檢核總表_" + record_date.replaceAll("-", "");
+			String fileName = centralNo + "_ETL傳檔資料關聯檢核總表_" + record_date.replaceAll("-", "");
 
-			File file = new File(savePath + File.separator + central_No + "_ETL關聯檢查_" + record_date.replaceAll("-", "")
+			File file = new File(savePath + File.separator + centralNo + "_ETL關聯檢查_" + record_date.replaceAll("-", "")
 					+ File.separator + fileName + ".xlsx");
 			if (file.getParentFile() != null) {
 				file.getParentFile().mkdirs();
@@ -314,21 +403,17 @@ public class ETL_Tool_RelevanceSql_To_Excels {
 		}
 	}
 
-	/**
-	 * This method generates an excel sheet containing data from the given Map.
-	 * The name of the excel sheet will be the String passed as a parameter.
-	 */
-	public void generateExcel(Map<String, LinkedHashMap<String, String>> resultMap) {
+	// 產出關聯檔
+	public void generateExcel(String centralNo, Map<String, LinkedHashMap<String, String>> resultMap) {
 		FileOutputStream fileOut = null;
 		SXSSFWorkbook wb = null;
 		String key = null;
 
 		try {
-			StringBuilder fileName = new StringBuilder(central_No);
-
+			StringBuilder fileName = new StringBuilder(centralNo);
 			fileName = SQLQUERY_Profile.getFileNameDetail(fileName, currentQuery);
 
-			key = fileName.toString().replaceFirst(central_No, "").replaceAll("_", "").replaceAll("[0-9]", "");
+			key = fileName.toString().replaceFirst(centralNo, "").replaceAll("_", "").replaceAll("[0-9]", "");
 
 			fileName.append(record_date.replaceAll("-", ""));
 			System.out.println("檔名:" + fileName);
@@ -349,8 +434,8 @@ public class ETL_Tool_RelevanceSql_To_Excels {
 			headerStyle.setAlignment(HorizontalAlignment.CENTER);
 
 			try {
-				File file = new File(savePath + File.separator + central_No + "_ETL關聯檢查_"
-						+ record_date.replaceAll("-", "") + File.separator + fileName + ".xlsx");
+				currDir = savePath + File.separator + centralNo + "_ETL關聯檢查_" + record_date.replaceAll("-", "");
+				File file = new File(currDir + File.separator + fileName + ".xlsx");
 				if (file.getParentFile() != null) {
 					file.getParentFile().mkdirs();
 				}
@@ -499,4 +584,14 @@ public class ETL_Tool_RelevanceSql_To_Excels {
 			}
 		}
 	}
+
+	private String getDescription(Exception e) {
+		String description = null;
+		if (e != null) {
+			description = e.toString();
+			description = description.length() > 400 ? description.substring(0, 400) : description;
+		}
+		return description;
+	}
+
 }

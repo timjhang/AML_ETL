@@ -27,7 +27,8 @@ public class Relevance {
 		
 		try {
 		
-			ETL_Tool_RelevanceSql_To_Excels.execute(batchNo, centralNo, recordDate);
+//			ETL_Tool_RelevanceSql_To_Excels.execute(batchNo, centralNo, recordDate);
+			new ETL_Tool_RelevanceSql_To_Excels(batchNo, recordDate).execute(centralNo);
 			
 			response.setMsg("SUCCESS");
 		

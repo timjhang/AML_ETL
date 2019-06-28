@@ -108,7 +108,7 @@ public class ETL_Tool_DES {
 			
 			System.out.println(encrypt("ETLUSR"));
 			System.out.println(encrypt("1qazXSW@"));
-			System.out.println(decrypt("f36ddb910a7dafa79b9ec0da15a003be"));
+			System.out.println(decrypt("63533c58288e861e"));
 			System.out.println(decrypt("75389c596a389dcfc53af1a4a004b34f"));
 			
 		} catch (Exception e) {

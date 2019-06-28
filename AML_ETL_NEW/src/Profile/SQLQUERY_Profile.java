@@ -33,47 +33,50 @@ public class SQLQUERY_Profile {
 	// XXX_保證人檔在額度檔無資料_yyyymmdd
 	private static String SQLQUERY7 = "SELECT DISTINCT A.ETL_CREATE_DATE AS 檔案日期, A.FILE_TYPE AS 業務別, SUBSTRING(A.LOAN_DETAIL_KEY,1,7) AS 本會代號, A.GUARANTOR_ID AS 保證人統編, SUBSTRING(A.LOAN_DETAIL_KEY,9,20) AS 額度編號 FROM SRC.LOAN_GUARANTOR A WHERE NOT EXISTS (SELECT 1 FROM SRC.LOAN_DETAIL B WHERE A.LOAN_DETAIL_KEY = B.LOAN_DETAIL_KEY  AND A.RECORD_DATE = B.RECORD_DATE) AND A.RECORD_DATE = ? ORDER BY A.FILE_TYPE, SUBSTRING(A.LOAN_DETAIL_KEY,1,7)";
 
-	// FCX 資料都串得到 Party
-	// XXX_外幣現鈔買賣檔在顧客主檔無資料_yyyymmdd
-	private static String SQLQUERY8 = "SELECT DISTINCT A.ETL_CREATE_DATE AS 檔案日期, A.FILE_TYPE AS 業務別, A.DOMAIN_ID AS 本會代號, A.TRANSFER_ID AS 交易編號, SUBSTRING(A.PARTY_KEY,9,11) AS 客戶統編, TRANSFER_TIME AS 實際交易時間, A.TRANSACTION_TYPE AS 交易類別 FROM SRC.TRANSFER A WHERE NOT EXISTS (SELECT 1 FROM SRC.PARTY B WHERE A.PARTY_KEY = B.PARTY_KEY AND B.RECORD_DATE = ?) AND A.DATA_SOURCE_FILE_NAME IN ('FCX') AND A.ETL_CREATE_DATE = ? ORDER BY A.FILE_TYPE";
-
 	// Transfer 資料都串得到 Party
 	// XXX_境外交易檔在顧客主檔無資料_yyyymmdd
-	private static String SQLQUERY9 = "SELECT DISTINCT A.ETL_CREATE_DATE AS 檔案日期, A.FILE_TYPE AS 業務別, A.DOMAIN_ID AS 本會代號, A.TRANSFER_ID AS 匯款編號, SUBSTRING(A.PARTY_KEY,9,11) AS 客戶統編, TRANSFER_TIME AS 實際匯款時間, A.TRANSACTION_TYPE AS 交易類別 FROM SRC.TRANSFER A WHERE NOT EXISTS (SELECT 1 FROM SRC.PARTY B WHERE A.PARTY_KEY = B.PARTY_KEY AND B.RECORD_DATE = ?) AND  A.DATA_SOURCE_FILE_NAME IN ('SELF')  AND A.ETL_CREATE_DATE = ? ORDER BY A.FILE_TYPE";
+	private static String SQLQUERY8 = "SELECT DISTINCT A.ETL_CREATE_DATE AS 檔案日期, A.FILE_TYPE AS 業務別, A.DOMAIN_ID AS 本會代號, A.TRANSFER_ID AS 匯款編號, SUBSTRING(A.PARTY_KEY,9,11) AS 客戶統編, TRANSFER_TIME AS 實際匯款時間, A.TRANSACTION_TYPE AS 交易類別 FROM SRC.TRANSFER A WHERE NOT EXISTS (SELECT 1 FROM SRC.PARTY B WHERE A.PARTY_KEY = B.PARTY_KEY AND B.RECORD_DATE = ?) AND  A.DATA_SOURCE_FILE_NAME IN ('SELF')  AND A.ETL_CREATE_DATE = ? ORDER BY A.FILE_TYPE";
 
 	// Party 非本行客戶資料都串得到 Party_Party_Rel
 	// XXX_顧客主檔非本行客戶在關係人檔無資料_yyyymmdd
-	private static String SQLQUERY10 = "SELECT DISTINCT A.ETL_CREATE_DATE AS 檔案日期, A.FILE_TYPE AS 業務別, A.DOMAIN_ID AS 本會代號, A.BRANCH_CODE AS 歸屬本分會代號, SUBSTRING(A.PARTY_KEY,9,11) AS 客戶統編, A.MY_CUSTOMER_FLAG AS 是否本行客戶 FROM SRC.PARTY A WHERE  A.DATA_SOURCE_FILE_NAME IN ('SELF') AND A.MY_CUSTOMER_FLAG = 'N' AND A.RECORD_DATE = ? AND ( NOT EXISTS (SELECT 1 FROM SRC.PARTY_PARTY_REL B WHERE A.PARTY_KEY = B.PARTY_KEY_1 AND A.RECORD_DATE = B.RECORD_DATE) OR NOT EXISTS (SELECT 1 FROM SRC.PARTY_PARTY_REL B WHERE A.PARTY_KEY = B.PARTY_KEY_2 AND A.RECORD_DATE = B.RECORD_DATE)) ORDER BY A.BRANCH_CODE";
+	private static String SQLQUERY9 = "SELECT DISTINCT A.ETL_CREATE_DATE AS 檔案日期, A.FILE_TYPE AS 業務別, A.DOMAIN_ID AS 本會代號, A.BRANCH_CODE AS 歸屬本分會代號, SUBSTRING(A.PARTY_KEY,9,11) AS 客戶統編, A.MY_CUSTOMER_FLAG AS 是否本行客戶 FROM SRC.PARTY A WHERE  A.DATA_SOURCE_FILE_NAME IN ('SELF') AND A.MY_CUSTOMER_FLAG = 'N' AND A.RECORD_DATE = ? AND ( NOT EXISTS (SELECT 1 FROM SRC.PARTY_PARTY_REL B WHERE A.PARTY_KEY = B.PARTY_KEY_1 AND A.RECORD_DATE = B.RECORD_DATE) OR NOT EXISTS (SELECT 1 FROM SRC.PARTY_PARTY_REL B WHERE A.PARTY_KEY = B.PARTY_KEY_2 AND A.RECORD_DATE = B.RECORD_DATE)) ORDER BY A.BRANCH_CODE";
 
 	// Party_Party_Rel資料都串得到 Party
 	// XXX_關係人檔客戶在顧客主檔無資料_yyyymmdd
-	private static String SQLQUERY11 = "SELECT DISTINCT A.ETL_CREATE_DATE AS 檔案日期, A.FILE_TYPE AS 業務別, A.DOMAIN_ID AS 本會代號, SUBSTRING(A.PARTY_KEY_1,9,11) AS 顧客1統編, (CASE WHEN B.PARTY_LAST_NAME_1 IS NULL THEN '(無資料)' ELSE REPLACE(B.PARTY_LAST_NAME_1,SUBSTRING(B.PARTY_LAST_NAME_1,2,2),'OO') END) AS 顧客1名稱, SUBSTRING(A.PARTY_KEY_2,9,11) AS 顧客2統編, (CASE WHEN C.PARTY_LAST_NAME_1 IS NULL THEN '(無資料)' ELSE REPLACE(C.PARTY_LAST_NAME_1,SUBSTRING(C.PARTY_LAST_NAME_1,2,2),'OO') END) AS 顧客2名稱, A.RELATION_TYPE_CODE AS 顧客關係種類代碼, D.NAME AS 代碼名稱, (CASE WHEN A.DATA_SOURCE_FILE_NAME = 'SELF' THEN 'PARTY_PARTY_REL' ELSE A.DATA_SOURCE_FILE_NAME END) AS 資料來源 FROM SRC.PARTY_PARTY_REL A LEFT JOIN SRC.PARTY B ON A.PARTY_KEY_1 = B.PARTY_KEY AND A.RECORD_DATE = B.RECORD_DATE LEFT JOIN SRC.PARTY C ON A.PARTY_KEY_2 = C.PARTY_KEY AND A.RECORD_DATE = C.RECORD_DATE LEFT JOIN GAMLDB.SRC.CODEPOOL D ON A.RELATION_TYPE_CODE = D.CODE AND D.TABLESPACENAME = 'PARTY_PARTY_REL_RELATION_TYPE_CODE' WHERE A.REVERSE_FLAG = 'N' AND A.RELATION_TYPE_CODE <> 'S' AND A.RECORD_DATE = ? AND (B.PARTY_LAST_NAME_1 IS NULL OR C.PARTY_LAST_NAME_1 IS NULL) ORDER BY A.DOMAIN_ID, SUBSTRING(A.PARTY_KEY_1,9,11), SUBSTRING(A.PARTY_KEY_2,9,11)";
+	private static String SQLQUERY10 = "SELECT DISTINCT A.ETL_CREATE_DATE AS 檔案日期, A.FILE_TYPE AS 業務別, A.DOMAIN_ID AS 本會代號, SUBSTRING(A.PARTY_KEY_1,9,11) AS 顧客1統編, (CASE WHEN B.PARTY_LAST_NAME_1 IS NULL THEN '(無資料)' ELSE REPLACE(B.PARTY_LAST_NAME_1,SUBSTRING(B.PARTY_LAST_NAME_1,2,2),'OO') END) AS 顧客1名稱, SUBSTRING(A.PARTY_KEY_2,9,11) AS 顧客2統編, (CASE WHEN C.PARTY_LAST_NAME_1 IS NULL THEN '(無資料)' ELSE REPLACE(C.PARTY_LAST_NAME_1,SUBSTRING(C.PARTY_LAST_NAME_1,2,2),'OO') END) AS 顧客2名稱, A.RELATION_TYPE_CODE AS 顧客關係種類代碼, D.NAME AS 代碼名稱, (CASE WHEN A.DATA_SOURCE_FILE_NAME = 'SELF' THEN 'PARTY_PARTY_REL' ELSE A.DATA_SOURCE_FILE_NAME END) AS 資料來源 FROM SRC.PARTY_PARTY_REL A LEFT JOIN SRC.PARTY B ON A.PARTY_KEY_1 = B.PARTY_KEY AND A.RECORD_DATE = B.RECORD_DATE LEFT JOIN SRC.PARTY C ON A.PARTY_KEY_2 = C.PARTY_KEY AND A.RECORD_DATE = C.RECORD_DATE LEFT JOIN GAMLDB.SRC.CODEPOOL D ON A.RELATION_TYPE_CODE = D.CODE AND D.TABLESPACENAME = 'PARTY_PARTY_REL_RELATION_TYPE_CODE' WHERE A.REVERSE_FLAG = 'N' AND A.RELATION_TYPE_CODE <> 'S' AND A.RECORD_DATE = ? AND (B.PARTY_LAST_NAME_1 IS NULL OR C.PARTY_LAST_NAME_1 IS NULL) ORDER BY A.DOMAIN_ID, SUBSTRING(A.PARTY_KEY_1,9,11), SUBSTRING(A.PARTY_KEY_2,9,11)";
 	
 	// 有Transaction 資料但Party檔非本行客戶
 	// XXX_交易明細檔帳戶在顧客主檔非本行客戶資料_yyyymmdd
-	private static String SQLQUERY12 = "SELECT DISTINCT A.FILE_TYPE AS 業務別, A.DOMAIN_ID AS 本會代號, SUBSTRING(A.ACCOUNT_KEY,9,30) AS 帳號, C.BRANCH_CODE AS 歸屬本分會代號, SUBSTRING(B.PARTY_KEY,9,11) AS 客戶統編, C.MY_CUSTOMER_FLAG AS 是否本行客戶 FROM SRC.TRANSACTION A LEFT JOIN SRC.PARTY_ACCOUNT_REL B ON A.ACCOUNT_KEY = B.ACCOUNT_KEY AND B.RECORD_DATE = ? LEFT JOIN SRC.PARTY C ON B.PARTY_KEY = C.PARTY_KEY AND B.RECORD_DATE = C.RECORD_DATE WHERE A.DATA_SOURCE_FILE_NAME IN ('SELF') AND C.MY_CUSTOMER_FLAG = 'N' ORDER BY C.BRANCH_CODE, A.FILE_TYPE";
+	private static String SQLQUERY11 = "SELECT DISTINCT A.FILE_TYPE AS 業務別, A.DOMAIN_ID AS 本會代號, SUBSTRING(A.ACCOUNT_KEY,9,30) AS 帳號, C.BRANCH_CODE AS 歸屬本分會代號, SUBSTRING(B.PARTY_KEY,9,11) AS 客戶統編, C.MY_CUSTOMER_FLAG AS 是否本行客戶 FROM SRC.TRANSACTION A LEFT JOIN SRC.PARTY_ACCOUNT_REL B ON A.ACCOUNT_KEY = B.ACCOUNT_KEY AND B.RECORD_DATE = ? LEFT JOIN SRC.PARTY C ON B.PARTY_KEY = C.PARTY_KEY AND B.RECORD_DATE = C.RECORD_DATE WHERE A.DATA_SOURCE_FILE_NAME IN ('SELF') AND C.MY_CUSTOMER_FLAG = 'N' ORDER BY C.BRANCH_CODE, A.FILE_TYPE";
 
 	// 有Loan_Detail資料但Party檔非本行客戶
 	// XXX_批覆書額度主檔帳戶在顧客主檔非本行客戶資料_yyyymmdd
-	private static String SQLQUERY13 = "SELECT DISTINCT A.FILE_TYPE AS 業務別, A.DOMAIN_ID AS 本會代號, SUBSTRING(A.LOAN_DETAIL_KEY,9,20) AS 額度編號, A.APPROVAL_DATE AS 額度核准日, SUBSTRING(A.LOAN_MASTER_KEY,9,20) AS 批覆書編號, A.RECORD_CREATE_DATE AS 批覆書申請日, C.BRANCH_CODE AS 歸屬本分會代號, SUBSTRING(B.PARTY_KEY,9,11) AS 客戶統編, C.MY_CUSTOMER_FLAG AS 是否本行客戶 FROM SRC.LOAN_DETAIL A LEFT JOIN SRC.LOAN_MASTER B  ON A.LOAN_MASTER_KEY = B.LOAN_MASTER_KEY AND A.RECORD_DATE = B.RECORD_DATE LEFT JOIN SRC.PARTY C ON B.PARTY_KEY = C.PARTY_KEY AND B.RECORD_DATE = C.RECORD_DATE WHERE C.MY_CUSTOMER_FLAG = 'N' AND C.RECORD_DATE = ? ORDER BY C.BRANCH_CODE, A.FILE_TYPE, SUBSTRING(B.PARTY_KEY,9,11)";
+	private static String SQLQUERY12 = "SELECT DISTINCT A.FILE_TYPE AS 業務別, A.DOMAIN_ID AS 本會代號, SUBSTRING(A.LOAN_DETAIL_KEY,9,20) AS 額度編號, A.APPROVAL_DATE AS 額度核准日, SUBSTRING(A.LOAN_MASTER_KEY,9,20) AS 批覆書編號, A.RECORD_CREATE_DATE AS 批覆書申請日, C.BRANCH_CODE AS 歸屬本分會代號, SUBSTRING(B.PARTY_KEY,9,11) AS 客戶統編, C.MY_CUSTOMER_FLAG AS 是否本行客戶 FROM SRC.LOAN_DETAIL A LEFT JOIN SRC.LOAN_MASTER B  ON A.LOAN_MASTER_KEY = B.LOAN_MASTER_KEY AND A.RECORD_DATE = B.RECORD_DATE LEFT JOIN SRC.PARTY C ON B.PARTY_KEY = C.PARTY_KEY AND B.RECORD_DATE = C.RECORD_DATE WHERE C.MY_CUSTOMER_FLAG = 'N' AND C.RECORD_DATE = ? ORDER BY C.BRANCH_CODE, A.FILE_TYPE, SUBSTRING(B.PARTY_KEY,9,11)";
 
 	// Party_Party_Rel資料都串得到 Party
-	// XXX_關係人檔客戶在顧客主檔無實質受益人資料_yyyymmdd
-	private static String SQLQUERY14 = "SELECT DISTINCT A.ETL_CREATE_DATE AS 檔案日期, A.FILE_TYPE AS 業務別, A.DOMAIN_ID AS 本會代號, SUBSTRING(A.PARTY_KEY_1,9,11) AS 顧客1統編, (CASE WHEN B.PARTY_LAST_NAME_1 IS NULL THEN '(無資料)' ELSE REPLACE(B.PARTY_LAST_NAME_1,SUBSTRING(B.PARTY_LAST_NAME_1,2,2),'OO') END) AS 顧客1名稱, SUBSTRING(A.PARTY_KEY_2,9,11) AS 顧客2統編, (CASE WHEN C.PARTY_LAST_NAME_1 IS NULL THEN '(無資料)' ELSE REPLACE(C.PARTY_LAST_NAME_1,SUBSTRING(C.PARTY_LAST_NAME_1,2,2),'OO') END) AS 顧客2名稱, A.RELATION_TYPE_CODE AS 顧客關係種類代碼, D.NAME AS 代碼名稱 FROM SRC.PARTY_PARTY_REL A LEFT JOIN SRC.PARTY B ON A.PARTY_KEY_1 = B.PARTY_KEY AND A.RECORD_DATE = B.RECORD_DATE LEFT JOIN SRC.PARTY C ON A.PARTY_KEY_2 = C.PARTY_KEY AND A.RECORD_DATE = C.RECORD_DATE LEFT JOIN GAMLDB.SRC.CODEPOOL D ON A.RELATION_TYPE_CODE = D.CODE AND D.TABLESPACENAME = 'PARTY_PARTY_REL_RELATION_TYPE_CODE' WHERE A.DATA_SOURCE_FILE_NAME IN ('SELF') AND A.REVERSE_FLAG = 'N' AND A.RELATION_TYPE_CODE = 'B' AND A.RECORD_DATE = ? AND (B.PARTY_LAST_NAME_1 IS NULL OR C.PARTY_LAST_NAME_1 IS NULL) ORDER BY A.DOMAIN_ID, SUBSTRING(A.PARTY_KEY_1,9,11), SUBSTRING(A.PARTY_KEY_2,9,11)";
+	// XXX_顧客主檔本行法人客戶在關係人檔無實質受益人資料_yyyymmdd
+	private static String SQLQUERY13 = "SELECT DISTINCT A.ETL_CREATE_DATE AS 檔案日期, A.FILE_TYPE AS 業務別, A.DOMAIN_ID AS 本會代號, A.BRANCH_CODE AS 歸屬本分會代號, A.PARTY_NUMBER AS 顧客統編, REPLACE(A.PARTY_LAST_NAME_1,SUBSTRING(A.PARTY_LAST_NAME_1,2,2),'OO') AS 顧客名稱, '無資料' AS 實質受益人關係 FROM SRC.PARTY A WHERE  A.MY_CUSTOMER_FLAG = 'Y' AND (A.ENTITY_TYPE <> '100' OR (A.ENTITY_TYPE = '900' AND A.GENDER NOT IN ('F','M'))) AND A.RECORD_DATE = ? AND NOT EXISTS (SELECT * FROM SRC.PARTY_PARTY_REL B WHERE A.PARTY_KEY = B.PARTY_KEY_1 AND A.RECORD_DATE = B.RECORD_DATE AND B.RELATION_TYPE_CODE = 'B') ORDER BY A.DOMAIN_ID, A.BRANCH_CODE, A.PARTY_NUMBER";
 
 	public static String[] getQuerys() {
-		String[] querys = { SQLQUERY1, SQLQUERY2, SQLQUERY3, SQLQUERY4, SQLQUERY5, SQLQUERY6, SQLQUERY7, SQLQUERY8,
-				SQLQUERY9, SQLQUERY10, SQLQUERY11, SQLQUERY12, SQLQUERY13, SQLQUERY14 };
+		String[] querys = { SQLQUERY1, SQLQUERY2, SQLQUERY3, SQLQUERY4, SQLQUERY5, SQLQUERY6, SQLQUERY7,
+				SQLQUERY8, SQLQUERY9, SQLQUERY10, SQLQUERY11, SQLQUERY12, SQLQUERY13 };
 		return querys;
 	}
 
 	public static String[] getSortOrder() {
 		String[] sortOrder = { "交易明細檔帳號在帳戶檔無資料", "帳戶檔客戶在顧客主檔無資料", "批覆書額度主檔在顧客主檔無資料", "放款主檔在額度檔無資料", "放款主檔帳號在帳戶檔無資料",
-				"擔保品檔在額度檔無資料", "保證人檔在額度檔無資料", "外幣現鈔買賣檔在顧客主檔無資料", "境外交易檔在顧客主檔無資料", "顧客主檔非本行客戶在關係人檔無資料", "關係人檔客戶在顧客主檔無資料",
-				"交易明細檔帳戶在顧客主檔非本行客戶資料", "批覆書額度主檔帳戶在顧客主檔非本行客戶資料", "關係人檔客戶在顧客主檔無實質受益人資料" };
+				"擔保品檔在額度檔無資料", "保證人檔在額度檔無資料", "境外交易檔在顧客主檔無資料", "顧客主檔非本行客戶在關係人檔無資料", "關係人檔客戶在顧客主檔無資料",
+				"交易明細檔帳戶在顧客主檔非本行客戶資料", "批覆書額度主檔帳戶在顧客主檔非本行客戶資料", "顧客主檔本行法人客戶在關係人檔無實質受益人資料" };
 		return sortOrder;
 	}
 
+	public static String[] getAllOrder() {
+		String[] allOrder = { "交易明細檔帳號在帳戶檔無資料", "帳戶檔客戶在顧客主檔無資料", "批覆書額度主檔在顧客主檔無資料", "放款主檔在額度檔無資料", "放款主檔帳號在帳戶檔無資料",
+				"擔保品檔在額度檔無資料", "保證人檔在額度檔無資料", "境外交易檔在顧客主檔無資料", "顧客主檔非本行客戶在關係人檔無資料", "關係人檔客戶在顧客主檔無資料",
+				"交易明細檔帳戶在顧客主檔非本行客戶資料", "批覆書額度主檔帳戶在顧客主檔非本行客戶資料", "顧客主檔本行法人客戶在關係人檔無實質受益人資料","ETL傳檔資料關聯檢核總表" };
+		return allOrder;
+	}
+	
 	public static String getFileName(String sql) {
 		Map<String, String> map = new HashMap<String, String>();
 		map.put(SQLQUERY1, "ACCOUNT");
@@ -84,12 +87,11 @@ public class SQLQUERY_Profile {
 		map.put(SQLQUERY6, "LOAN_DETAIL");
 		map.put(SQLQUERY7, "LOAN_DETAIL");
 		map.put(SQLQUERY8, "PARTY");
-		map.put(SQLQUERY9, "PARTY");
-		map.put(SQLQUERY10, "PARTY_PARTY_REL");
-		map.put(SQLQUERY11, "PARTY");
-		map.put(SQLQUERY12, "PARTY_ACCOUNT_REL");
-		map.put(SQLQUERY13, "LOAN_MASTER");
-		map.put(SQLQUERY14, "PARTY");
+		map.put(SQLQUERY9, "PARTY_PARTY_REL");
+		map.put(SQLQUERY10, "PARTY");
+		map.put(SQLQUERY11, "PARTY_ACCOUNT_REL");
+		map.put(SQLQUERY12, "LOAN_MASTER");
+		map.put(SQLQUERY13, "PARTY");
 		return map.get(sql);
 
 	}
@@ -104,12 +106,11 @@ public class SQLQUERY_Profile {
 		map.put(SQLQUERY6, "LOAN_COLLATERAL");
 		map.put(SQLQUERY7, "LOAN_GUARANTOR");
 		map.put(SQLQUERY8, "TRANSFER");
-		map.put(SQLQUERY9, "TRANSFER");
-		map.put(SQLQUERY10, "PARTY");
-		map.put(SQLQUERY11, "PARTY_PARTY_REL");
-		map.put(SQLQUERY12, "TRANSACTION");
-		map.put(SQLQUERY13, "LOAN_DETAIL");
-		map.put(SQLQUERY14, "PARTY_PARTY_REL");
+		map.put(SQLQUERY9, "PARTY");
+		map.put(SQLQUERY10, "PARTY_PARTY_REL");
+		map.put(SQLQUERY11, "TRANSACTION");
+		map.put(SQLQUERY12, "LOAN_DETAIL");
+		map.put(SQLQUERY13, "PARTY_PARTY_REL");
 		return map.get(sql);
 
 	}
@@ -137,26 +138,23 @@ public class SQLQUERY_Profile {
 		} else if (SQLQUERY7.equals(currentQuery)) {
 			fileName.append("_07保證人檔在額度檔無資料_");
 			return fileName;
-		} else if (SQLQUERY8.equals(currentQuery)) {
-			fileName.append("_08外幣現鈔買賣檔在顧客主檔無資料_");
+		}else if (SQLQUERY8.equals(currentQuery)) {
+			fileName.append("_08境外交易檔在顧客主檔無資料_");
 			return fileName;
 		} else if (SQLQUERY9.equals(currentQuery)) {
-			fileName.append("_09境外交易檔在顧客主檔無資料_");
+			fileName.append("_09顧客主檔非本行客戶在關係人檔無資料_");
 			return fileName;
 		} else if (SQLQUERY10.equals(currentQuery)) {
-			fileName.append("_10顧客主檔非本行客戶在關係人檔無資料_");
+			fileName.append("_10關係人檔客戶在顧客主檔無資料_");
 			return fileName;
 		} else if (SQLQUERY11.equals(currentQuery)) {
-			fileName.append("_11關係人檔客戶在顧客主檔無資料_");
+			fileName.append("_11交易明細檔帳戶在顧客主檔非本行客戶資料_");
 			return fileName;
 		} else if (SQLQUERY12.equals(currentQuery)) {
-			fileName.append("_12交易明細檔帳戶在顧客主檔非本行客戶資料_");
+			fileName.append("_12批覆書額度主檔帳戶在顧客主檔非本行客戶資料_");
 			return fileName;
 		} else if (SQLQUERY13.equals(currentQuery)) {
-			fileName.append("_13批覆書額度主檔帳戶在顧客主檔非本行客戶資料_");
-			return fileName;
-		} else if (SQLQUERY14.equals(currentQuery)) {
-			fileName.append("_14關係人檔客戶在顧客主檔無實質受益人資料_");
+			fileName.append("_13顧客主檔本行法人客戶在關係人檔無實質受益人資料_");
 			return fileName;
 		}
 		return fileName;
@@ -164,7 +162,7 @@ public class SQLQUERY_Profile {
 
 	public static int getPreparedStatementNum(String currentQuery) {
 
-		if (SQLQUERY1.equals(currentQuery) || SQLQUERY8.equals(currentQuery) || SQLQUERY9.equals(currentQuery))
+		if (SQLQUERY1.equals(currentQuery) || SQLQUERY8.equals(currentQuery))
 			return 2;
 
 		return 1;
@@ -178,13 +176,12 @@ public class SQLQUERY_Profile {
 		String[] sqlquery5 = { "檔案日期", "業務別", "本會代號", "客戶統編", "放款帳號", "額度編號", "初貸日", "放款狀態","帳戶行" };
 		String[] sqlquery6 = { "檔案日期", "業務別", "本會代號", "所有權人統編","擔保品編號", "額度編號" };
 		String[] sqlquery7 = { "檔案日期", "業務別", "本會代號", "保證人統編", "額度編號" };
-		String[] sqlquery8 = { "檔案日期", "業務別", "本會代號", "交易編號", "客戶統編", "實際交易時間", "交易類別" };
-		String[] sqlquery9 = { "檔案日期", "業務別", "本會代號", "匯款編號", "客戶統編", "實際匯款時間", "交易類別" };
-		String[] sqlquery10 = { "檔案日期", "業務別", "本會代號", "歸屬本分會代號", "客戶統編", "是否本行客戶" };
-		String[] sqlquery11 = { "檔案日期", "業務別", "本會代號", "顧客1統編", "顧客1名稱", "顧客2統編", "顧客2名稱", "顧客關係種類代碼", "代碼名稱","資料來源" };
-		String[] sqlquery12 = { "業務別", "本會代號", "帳號", "歸屬本分會代號", "客戶統編", "是否本行客戶" };
-		String[] sqlquery13 = { "業務別", "本會代號", "額度編號", "額度核准日", "批覆書編號", "批覆書申請日", "歸屬本分會代號", "客戶統編", "是否本行客戶" };
-		String[] sqlquery14 = { "檔案日期", "業務別", "本會代號", "顧客1統編", "顧客1名稱", "顧客2統編", "顧客2名稱", "顧客關係種類代碼", "代碼名稱" };
+		String[] sqlquery8 = { "檔案日期", "業務別", "本會代號", "匯款編號", "客戶統編", "實際匯款時間", "交易類別" };
+		String[] sqlquery9 = { "檔案日期", "業務別", "本會代號", "歸屬本分會代號", "客戶統編", "是否本行客戶" };
+		String[] sqlquery10 = { "檔案日期", "業務別", "本會代號", "顧客1統編", "顧客1名稱", "顧客2統編", "顧客2名稱", "顧客關係種類代碼", "代碼名稱","資料來源" };
+		String[] sqlquery11 = { "業務別", "本會代號", "帳號", "歸屬本分會代號", "客戶統編", "是否本行客戶" };
+		String[] sqlquery12 = { "業務別", "本會代號", "額度編號", "額度核准日", "批覆書編號", "批覆書申請日", "歸屬本分會代號", "客戶統編", "是否本行客戶" };
+		String[] sqlquery13 = { "檔案日期", "業務別", "本會代號", "歸屬本分會代號", "顧客統編", "顧客名稱", "實質受益人關係" };
 
 		if (SQLQUERY1.equals(currentQuery)) {
 			return sqlquery1;
@@ -212,8 +209,6 @@ public class SQLQUERY_Profile {
 			return sqlquery12;
 		} else if (SQLQUERY13.equals(currentQuery)) {
 			return sqlquery13;
-		} else if (SQLQUERY14.equals(currentQuery)) {
-			return sqlquery14;
 		}
 
 		return null;
